@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Mz-pivot-plugin-configurator-FilterLabelWindow'>/**
+</span>* This is the window that allows configuring a label filter
+* 
+*/
+Ext.define('Mz.pivot.plugin.configurator.FilterLabelWindow',{
+    extend: 'Ext.window.Window',
+    
+    requires: [
+        'Ext.form.Panel',
+        'Ext.form.FieldContainer',
+        'Ext.form.field.Text',
+        'Ext.form.field.ComboBox',
+        'Ext.layout.container.HBox'
+    ],
+    
+<span id='Mz-pivot-plugin-configurator-FilterLabelWindow-property-width'>    width:          400,
+</span><span id='Mz-pivot-plugin-configurator-FilterLabelWindow-property-height'>    height:         160,
+</span><span id='Mz-pivot-plugin-configurator-FilterLabelWindow-property-modal'>    modal:          true,
+</span><span id='Mz-pivot-plugin-configurator-FilterLabelWindow-property-closeAction'>    closeAction:    'destroy',
+</span>    
+<span id='Mz-pivot-plugin-configurator-FilterLabelWindow-property-titleText'>    titleText:          'Label filter ({0})',
+</span><span id='Mz-pivot-plugin-configurator-FilterLabelWindow-property-fieldText'>    fieldText:          'Show items for which the label',
+</span><span id='Mz-pivot-plugin-configurator-FilterLabelWindow-property-caseSensitiveText'>    caseSensitiveText:  'Case sensitive',
+</span>
+<span id='Mz-pivot-plugin-configurator-FilterLabelWindow-method-initComponent'>    initComponent: function(){
+</span>        var me = this,
+            items = [];
+            
+        items = me.filterFields || [];
+        
+        items.push({
+            xtype:          'combo',
+            editable:       false,
+            queryMode:      'local',
+            valueField:     'value',
+            store:          me.store,
+            name:           'type',
+            
+            listeners: {
+                change: function(combo, newValue){
+                    var hidden = (newValue == Mz.aggregate.filter.Label.TypeBetween || newValue == Mz.aggregate.filter.Label.TypeNotBetween);
+                    this.down('#fValue').setVisible(!hidden);
+                    this.down('#fValue').allowBlank = hidden;
+                    this.down('#fFrom').setVisible(hidden);
+                    this.down('#fFrom').allowBlank = !hidden;
+                    this.down('#fTo').setVisible(hidden);
+                    this.down('#fTo').allowBlank = !hidden;
+                },
+                scope:  me
+            }
+        },{
+            itemId:     'fValue',
+            xtype:      'textfield',
+            margin:     '0 0 0 5',
+            name:       'value'
+        },{
+            itemId:     'fFrom',
+            xtype:      'textfield',
+            margin:     '0 0 0 5',
+            name:       'from'
+        },{
+            itemId:     'fTo',
+            xtype:      'textfield',
+            margin:     '0 0 0 5',
+            name:       'to'
+        });
+        
+        Ext.apply(me, {
+            title:      Ext.String.format(me.titleText, me.title),
+            layout:     'fit',
+            
+            items: [{
+                xtype:  'form',
+                bodyPadding:    5,
+                
+                items: [{
+                    xtype:  'hidden',
+                    name:   'mztype'
+                },{
+                    xtype:          'fieldcontainer',
+                    labelSeparator: '',
+                    fieldLabel:     me.fieldText,
+                    labelAlign:     'top',
+                    layout: {
+                        type: 'hbox',
+                        align: 'stretch'
+                    },
+                    
+                    defaults: {
+                        allowBlank: false,
+                        flex:       1
+                    },
+                    
+                    items: items 
+                },{
+                    xtype:          'checkbox',
+                    boxLabel:       me.caseSensitiveText,
+                    name:           'caseSensitive'
+                }]
+            }],
+            
+            buttons: [{
+                text:       Ext.Msg.buttonText.ok,
+                handler:    me.applyFilter,
+                scope:      me
+            },{
+                text:       Ext.Msg.buttonText.cancel,
+                handler:    me.cancelFilter,
+                scope:      me
+            }]
+        });
+        
+        me.callParent(arguments);
+    },
+    
+<span id='Mz-pivot-plugin-configurator-FilterLabelWindow-method-applyFilter'>    applyFilter: function(){
+</span>        var me = this;
+        
+        if(me.down('form').getForm().isValid()){
+            me.fireEvent('filter', me);
+        }
+    },
+    
+<span id='Mz-pivot-plugin-configurator-FilterLabelWindow-method-cancelFilter'>    cancelFilter: function(){
+</span>        this.close();
+    }
+});</pre>
+</body>
+</html>

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Mz-aggregate-matrix-Result'>/**
+</span>* A Result object stores all calculated values for the aggregate dimensions.
+* In case of a Local matrix it also stores all records on a left/top axis pair.
+* 
+*/
+Ext.define('Mz.aggregate.matrix.Result', {
+    
+<span id='Mz-aggregate-matrix-Result-property-leftKey'>    /**
+</span>    *  key of left axis item or grandTotalKey
+    * 
+    * @type String
+    */
+    leftKey:        '',
+<span id='Mz-aggregate-matrix-Result-property-topKey'>    /**
+</span>    * key of top axis item or grandTotalKey
+    * 
+    * @type String
+    */
+    topKey:         '',
+<span id='Mz-aggregate-matrix-Result-property-dirty'>    /**
+</span>    * Set this flag on true if you modified at least one record in this result.
+    * The grid cell will be marked as dirty in such a case.
+    * 
+    * @type Boolean
+    */
+    dirty:          false,
+    
+<span id='Mz-aggregate-matrix-Result-property-records'>    /**
+</span>    *  Array of records for the left/top axis keys pair.
+    * 
+    * @type Array
+    */
+    records:        null,
+<span id='Mz-aggregate-matrix-Result-property-values'>    /**
+</span>    *  Object that stores all calculated values for each pivot aggregate.
+    * The object keys are the dimension ids.
+    * 
+    * @type Object
+    */
+    values:         null,
+<span id='Mz-aggregate-matrix-Result-property-matrix'>    /**
+</span>    * Reference to the matrix object
+    * 
+    * @type {Mz.aggregate.matrix.Abstract}
+    */
+    matrix:         null,
+    
+<span id='Mz-aggregate-matrix-Result-method-constructor'>    constructor: function(config){
+</span>        var me = this;
+        
+        Ext.apply(me, config || {});
+        
+        me.records = [];
+        me.values = {};
+    },
+    
+<span id='Mz-aggregate-matrix-Result-method-destroy'>    destroy: function(){
+</span>        var me = this;
+        
+        me.records.length = 0;
+        
+        delete me.records;
+        delete me.matrix;
+        
+        if(me.values){
+            delete me.values;
+        }
+        if(me.leftAxisItem){
+            delete me.leftAxisItem;
+        }
+        if(me.topAxisItem){
+            delete me.topAxisItem;
+        }
+        
+        me.callParent(arguments);
+    },
+    
+<span id='Mz-aggregate-matrix-Result-method-calculate'>    /**
+</span>    * Calculate all pivot aggregate dimensions for the internal records
+    * 
+    */
+    calculate: function(){
+        var me = this,
+            i, dimension,
+            length = me.matrix.aggregate.getCount();
+        
+        // for each pivot aggregate dimension calculate the value and call addValue
+        for(i = 0; i &lt; length; i++){
+            dimension = me.matrix.aggregate.getAt(i);
+            me.addValue(dimension.getId(), dimension.aggregatorFn(me.records, dimension.dataIndex, me.matrix, me.leftKey, me.topKey));
+        }
+    },
+    
+<span id='Mz-aggregate-matrix-Result-method-calculateByFn'>    /**
+</span>    * Besides the calculation functions defined on your aggregate dimension you could 
+    * calculate values based on other store fields and custom functions.
+    * 
+    * @param key The generated value will be stored in the result under this key for later extraction
+    * @param dataIndex The dataIndex that should be used on the records for doing calculations
+    * @param aggFn Your custom function
+    */
+    calculateByFn: function(key, dataIndex, aggFn){
+        var me = this,
+            v = aggFn(me.records, dataIndex, me.matrix, me.leftKey, me.topKey);
+        
+        me.addValue(key, v);
+        
+        return v;
+    },
+    
+<span id='Mz-aggregate-matrix-Result-method-addValue'>    /**
+</span>    * Add the calculated value for an aggregate dimension to the internal values storage
+    * 
+    * @param dimensionId
+    * @param value
+    */
+    addValue: function(dimensionId, value){
+        this.values[dimensionId] = value;
+    },
+    
+<span id='Mz-aggregate-matrix-Result-method-getValue'>    /**
+</span>    * Returns the calculated value for the specified aggregate dimension
+    * 
+    * @param dimensionId
+    */
+    getValue: function(dimensionId){
+        return this.values[dimensionId];
+    },
+    
+<span id='Mz-aggregate-matrix-Result-method-addRecord'>    /**
+</span>    * Add the specified record to the internal records storage.
+    * These records will be used for calculating the pivot aggregate dimension values.
+    * This should be used only when all calculations are done locally and not remotely.
+    * 
+    * @param record
+    */
+    addRecord: function(record){
+        this.records.push(record);
+    },
+    
+<span id='Mz-aggregate-matrix-Result-method-getLeftAxisItem'>    /**
+</span>    * Returns the left axis item
+    * 
+    * @returns {Mz.aggregate.axis.Item}
+    */
+    getLeftAxisItem: function(){
+        return this.matrix.leftAxis.items.getByKey(this.leftKey);
+    },
+    
+<span id='Mz-aggregate-matrix-Result-method-getTopAxisItem'>    /**
+</span>    * Returns the top axis item
+    * 
+    * @returns {Mz.aggregate.axis.Item}
+    */
+    getTopAxisItem: function(){
+        return this.matrix.topAxis.items.getByKey(this.topKey);
+    }
+});</pre>
+</body>
+</html>

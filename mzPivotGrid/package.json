@@ -1,0 +1,14 @@
+{
+    "name": "mzPivotGrid",
+    "type": "code",
+    "creator": "Adrian Teodorescu (www.mzsolutions.eu)",
+    "summary": "Pivot grid",
+    "detailedDescription": "ExtJS component for generating pivot tables",
+    "version": "3.2.1",
+    "compatVersion": "3.0.0",
+    "format": "1",
+    "local": true,
+    "requires": [
+        "mzPivotMatrix"
+    ]
+}

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Mz-aggregate-MixedCollection'>/**
+</span>* This class enhances the Ext.util.MixedCollection class by allowing the 
+* children objects to be destroyed on remove.
+* 
+*/
+Ext.define('Mz.aggregate.MixedCollection', {
+    extend: 'Ext.util.MixedCollection',
+    
+<span id='Mz-aggregate-MixedCollection-method-removeAt'>    removeAt: function(index){
+</span>        var me = this,
+            obj = me.callParent(arguments);
+        
+        Ext.destroy(obj);
+    },
+    
+<span id='Mz-aggregate-MixedCollection-method-clear'>    clear: function(){
+</span>        var me = this;
+        
+        Ext.destroy(me.items);
+        me.callParent(arguments);
+    },
+    
+<span id='Mz-aggregate-MixedCollection-method-removeAll'>    removeAll: function(){
+</span>        var me = this;
+        
+        Ext.destroy(me.items);
+        me.callParent(arguments);
+    },
+    
+<span id='Mz-aggregate-MixedCollection-method-destroy'>    destroy: function(){
+</span>        // destroy all objects in the items array
+        Ext.destroy(this.items);
+    }
+});</pre>
+</body>
+</html>

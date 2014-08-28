@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Mz-pivot-dataexport-excel-Worksheet'>/**
+</span>*   Class used to create an Excel worksheet
+*/
+Ext.define('Mz.pivot.dataexport.excel.Worksheet', {
+    extend: 'Mz.pivot.dataexport.excel.Workbase',
+
+<span id='Mz-pivot-dataexport-excel-Worksheet-method-constructor'>    constructor: function (config) {
+</span>        var me = this;
+        
+        me.callParent(arguments);
+
+        Ext.applyIf(me, {
+<span id='Mz-pivot-dataexport-excel-Worksheet-cfg-showTitle'>            /**
+</span>             * @cfg showTitle
+             * @type Boolean
+             * Show or hide the title
+             */
+            showTitle: true,
+            
+<span id='Mz-pivot-dataexport-excel-Worksheet-cfg-groupHeaderFontSize'>            /**
+</span>             * @cfg groupHeaderFontSize
+             * @type String
+             * Font size applied to the summary group header cells
+             */
+            groupHeaderFontSize: &quot;10&quot;,
+
+<span id='Mz-pivot-dataexport-excel-Worksheet-cfg-groupHeaderFillColor'>            /**
+</span>             * @cfg groupHeaderFillColor
+             * @type String
+             * Fill folor used for the summary group header cells
+             */
+            groupHeaderFillColor: &quot;#D8D8D8&quot;,
+
+<span id='Mz-pivot-dataexport-excel-Worksheet-cfg-groupFooterFontSize'>            /**
+</span>             * @cfg groupFooterFontSize
+             * @type String
+             * Font size applied to the summary group footer cells
+             */
+            groupFooterFontSize: &quot;10&quot;,
+
+<span id='Mz-pivot-dataexport-excel-Worksheet-cfg-groupFooterFillColor'>            /**
+</span>             * @cfg groupFooterFillColor
+             * @type String
+             * Fill folor used for the summary group footer cells
+             */
+            groupFooterFillColor: &quot;#BFBFBF&quot;,
+
+            columns:            me.data ? me.data.columns || [] : []
+        });
+
+        if (me.showTitle){
+            me.addTitleStyle();
+        }
+        
+    },
+
+<span id='Mz-pivot-dataexport-excel-Worksheet-property-worksheetTpl'>    worksheetTpl: new Ext.XTemplate(
+</span>        '&lt;ss:Worksheet ss:Name=&quot;{title}&quot;&gt;',
+            '&lt;ss:Names&gt;',
+                '&lt;ss:NamedRange ss:Name=&quot;Print_Titles&quot; ss:RefersTo=&quot;=\'{title}\'!R1:R2&quot; /&gt;',
+            '&lt;/ss:Names&gt;',
+            '&lt;ss:Table x:FullRows=&quot;1&quot; x:FullColumns=&quot;1&quot; ss:ExpandedColumnCount=&quot;{colCount}&quot; ss:ExpandedRowCount=&quot;{rowCount}&quot;&gt;',
+                '{columns}',
+                '&lt;tpl if=&quot;showTitle&quot;&gt;',
+                    '&lt;ss:Row ss:Height=&quot;38&quot;&gt;',
+                        '&lt;ss:Cell ss:StyleID=&quot;Title&quot; ss:MergeAcross=&quot;{colCount - 1}&quot;&gt;',
+                            '&lt;ss:Data ss:Type=&quot;String&quot;&gt;{title}&lt;/ss:Data&gt;',
+                            '&lt;ss:NamedCell ss:Name=&quot;Print_Titles&quot; /&gt;',
+                        '&lt;/ss:Cell&gt;',
+                    '&lt;/ss:Row&gt;',
+                '&lt;/tpl&gt;',
+                //'&lt;ss:Row ss:AutoFitHeight=&quot;1&quot;&gt;',
+                '{header}',
+                //'&lt;/ss:Row&gt;',
+                '{rows}',
+            '&lt;/ss:Table&gt;',
+            '&lt;x:WorksheetOptions&gt;',
+                '&lt;x:PageSetup&gt;',
+                    '&lt;x:Layout x:CenterHorizontal=&quot;1&quot; x:Orientation=&quot;Landscape&quot; /&gt;',
+                    '&lt;x:Footer x:Data=&quot;Page &amp;amp;P of &amp;amp;N&quot; x:Margin=&quot;0.5&quot; /&gt;',
+                    '&lt;x:PageMargins x:Top=&quot;0.5&quot; x:Right=&quot;0.5&quot; x:Left=&quot;0.5&quot; x:Bottom=&quot;0.8&quot; /&gt;',
+                '&lt;/x:PageSetup&gt;',
+                '&lt;x:FitToPage /&gt;',
+                '&lt;x:Print&gt;',
+                    '&lt;x:PrintErrors&gt;Blank&lt;/x:PrintErrors&gt;',
+                    '&lt;x:FitWidth&gt;1&lt;/x:FitWidth&gt;',
+                    '&lt;x:FitHeight&gt;32767&lt;/x:FitHeight&gt;',
+                    '&lt;x:ValidPrinterInfo /&gt;',
+                    '&lt;x:VerticalResolution&gt;600&lt;/x:VerticalResolution&gt;',
+                '&lt;/x:Print&gt;',
+                '&lt;x:Selected /&gt;',
+                '&lt;x:DoNotDisplayGridlines /&gt;',
+                '&lt;x:ProtectObjects&gt;False&lt;/x:ProtectObjects&gt;',
+                '&lt;x:ProtectScenarios&gt;False&lt;/x:ProtectScenarios&gt;',
+            '&lt;/x:WorksheetOptions&gt;',
+        '&lt;/ss:Worksheet&gt;'
+    ),
+
+<span id='Mz-pivot-dataexport-excel-Worksheet-method-render'>    /**
+</span>     * Builds the Worksheet XML
+     */
+    render: function () {
+        var me = this;
+        
+        me.fixColumns(me.data.columns, me.getColDepth(me.data.columns, -1));
+        var rows = me.buildRows();
+        
+        return me.worksheetTpl.apply({
+            header:     me.buildHeader(),
+            columns:    '',
+            rows:       rows.join(&quot;&quot;),
+            colCount:   me.getColCount(me.data.columns),
+            rowCount:   rows.length + me.getColDepth(me.data.columns, 1),
+            title:      me.title,
+            showTitle:  me.showTitle
+        });
+    },
+
+<span id='Mz-pivot-dataexport-excel-Worksheet-method-getColCount'>    getColCount: function(columns){
+</span>        var me = this,
+            s = 0;
+
+        if (!columns) return s;
+
+        for (var i = 0; i &lt; columns.length; i++) {
+            if (!columns[i].columns) {
+                s += 1;
+            } else {
+                s += me.getColCount(columns[i].columns);
+            }
+        }
+
+        return s;
+    },
+
+<span id='Mz-pivot-dataexport-excel-Worksheet-method-getColDepth'>    getColDepth: function(columns, level){
+</span>        var me = this,
+            m = 0;
+
+        if (!columns) return level;
+
+        for (var i = 0; i &lt; columns.length; i++) {
+            m = Math.max(m, me.getColDepth(columns[i].columns, level + 1));
+        }
+        
+        return m;
+    },
+
+<span id='Mz-pivot-dataexport-excel-Worksheet-method-fixColumns'>    fixColumns: function (columns, depth) {
+</span>        var me = this,
+            col;
+
+        if (!columns) return;
+
+        for (var i = 0; i &lt; columns.length; i++) {
+            col = columns[i];
+            if (!col.columns &amp;&amp; depth &gt; col.level) {
+                col.columns = [];
+                col.columns.push({
+                    text: '',
+                    level: col.level + 1
+                });
+            }
+            me.fixColumns(col.columns, depth);
+        }
+    },
+
+<span id='Mz-pivot-dataexport-excel-Worksheet-method-buildColumns'>    buildColumns: function () {
+</span>        var me = this,
+            cols = [];
+
+        Ext.each(me.columns, function (column) {
+            cols.push(this.buildColumn());
+        }, me);
+
+        return cols;
+    },
+
+<span id='Mz-pivot-dataexport-excel-Worksheet-method-buildColumn'>    buildColumn: function (width) {
+</span>        return String.format('&lt;ss:Column ss:AutoFitWidth=&quot;1&quot; ss:Width=&quot;{0}&quot; /&gt;', width || 164);
+    },
+
+<span id='Mz-pivot-dataexport-excel-Worksheet-method-buildRows'>    buildRows: function () {
+</span>        var me = this,
+            rows = [], cells,
+            leftMerge = me.data.columns.length &gt; 0 ? me.getColCount(me.data.columns[0].columns) : 0,
+            colMerge = me.getColCount(me.data.columns),
+            groups = Ext.isDefined(me.data.groups) ? me.data.groups : Ext.Array.from(me.data);
+        
+        me.buildSummaryRows(groups, rows, colMerge, 1);
+
+        if(Ext.isDefined(me.data.groups) &amp;&amp; me.data.summary.length &gt; 0){
+            me.addGroupLevelStyle(1);
+            cells = [];
+            cells.push(me.buildCell(me.data.summaryText, 0, 'SummaryFooter1').render());
+            for (var j = 1; j &lt; me.data.summary.length; j++) {
+                cells.push(me.buildCell(me.data.summary[j], 0, 'SummaryFooter1').render());
+            }
+            rows.push(Ext.String.format(&quot;&lt;ss:Row&gt;{0}&lt;/ss:Row&gt;&quot;, cells.join('')));
+        }
+
+        return rows;
+    },
+
+<span id='Mz-pivot-dataexport-excel-Worksheet-method-buildSummaryRows'>    buildSummaryRows: function (groups, rows, colMerge, level) {
+</span>        var me = this,
+            g, cells;
+
+        if (!groups) return;
+
+        for (var i = 0; i &lt; groups.length; i++) {
+            me.addGroupLevelStyle(level);
+            
+            g = groups[i];
+            rows.push(Ext.String.format(&quot;&lt;ss:Row&gt;{0}&lt;/ss:Row&gt;&quot;, me.buildCell(g.text, colMerge - 1, 'SummaryHeader' + level, 'String').render()));
+
+            me.buildSummaryRows(g.groups, rows, colMerge, level + 1);
+            me.buildGroupRows(g.rows, rows);
+
+            if(g.summary.length &gt; 0){
+                cells = [];
+                cells.push(me.buildCell(g.summaryText, 0, 'SummaryFooter' + level, 'String').render());
+                for (var j = 1; j &lt; g.summary.length; j++) {
+                    cells.push(me.buildCell(g.summary[j], 0, 'SummaryFooter' + level).render() );
+                }
+                rows.push(Ext.String.format(&quot;&lt;ss:Row&gt;{0}&lt;/ss:Row&gt;&quot;, cells.join('')) );
+            }
+
+        }
+    },
+    
+<span id='Mz-pivot-dataexport-excel-Worksheet-method-buildGroupRows'>    buildGroupRows: function(lines, rows){
+</span>        var me = this,
+            l, cells;
+
+        if (!lines) return;
+
+        for (var i = 0; i &lt; lines.length; i++) {
+            l = lines[i];
+            cells = [];
+            var style = i % 2 == 0 ? 'even' : 'odd';
+            for (var j = 0; j &lt; l.length; j++) {
+                cells.push(me.buildCell(l[j], 0, me.hasDefaultStyle ? 'Default' : '').render());
+            }
+            rows.push(Ext.String.format(&quot;&lt;ss:Row&gt;{0}&lt;/ss:Row&gt;&quot;, cells.join('') ));
+        }
+    },
+
+<span id='Mz-pivot-dataexport-excel-Worksheet-method-buildHeader'>    buildHeader: function () {
+</span>        var me = this,
+            cells = [], ret = {}, s = '';
+        
+        me.buildHeaderRows(me.data.columns, ret);
+
+        Ext.Object.each(ret, function (key, value, me) {
+            cells.push(Ext.String.format('&lt;ss:Row ss:AutoFitHeight=&quot;1&quot;&gt;{0}&lt;/ss:Row&gt;', value.join(&quot;&quot;)));
+        });
+        
+        return cells.join(&quot;&quot;);
+    },
+
+<span id='Mz-pivot-dataexport-excel-Worksheet-method-buildHeaderRows'>    buildHeaderRows: function (columns, result) {
+</span>        var me = this,
+            col, count, s;
+
+        if (!columns) return;
+
+        for (var i = 0; i &lt; columns.length; i++) {
+            col = columns[i];
+            count = me.getColCount(col.columns);
+            result['s' + col.level] = result['s' + col.level] || [];
+
+            if (count === 0 || count === 1) {
+                s = Ext.String.format('&lt;ss:Cell ss:StyleID=&quot;Header&quot;&gt;&lt;ss:Data ss:Type=&quot;String&quot;&gt;{0}&lt;/ss:Data&gt;&lt;ss:NamedCell ss:Name=&quot;Print_Titles&quot; /&gt;&lt;/ss:Cell&gt;', col.text);
+            } else {
+                s = Ext.String.format('&lt;ss:Cell ss:MergeAcross=&quot;{0}&quot; ss:StyleID=&quot;Header&quot;&gt;&lt;ss:Data ss:Type=&quot;String&quot;&gt;{1}&lt;/ss:Data&gt;&lt;ss:NamedCell ss:Name=&quot;Print_Titles&quot; /&gt;&lt;/ss:Cell&gt;', count - 1, col.text);
+            }
+
+            result['s' + col.level].push(s);
+
+            me.buildHeaderRows(col.columns, result);
+        }
+    },
+
+<span id='Mz-pivot-dataexport-excel-Worksheet-method-buildCell'>    buildCell: function (value, merge, style, type) {
+</span>        var me = this;
+            
+        if(!type){
+            type = me.getExcelValueType(value);
+        }
+            
+        if (type == &quot;DateTime&quot;) {
+            value = Ext.Date.format(value, 'Y-m-d\\TH:i:s');
+        }
+        
+        if(!Ext.isEmpty(style)){
+            style += (type != 'String') ? type : '';
+        }
+
+        return Ext.create('Mz.pivot.dataexport.excel.Cell', {
+            value:      value,
+            type:       type,
+            merge:      merge,
+            style:      style
+        });
+    },
+    
+<span id='Mz-pivot-dataexport-excel-Worksheet-method-getExcelValueType'>    getExcelValueType: function(v){
+</span>        return Ext.isNumeric(v) ? 'Number' : (Ext.isDate(v) ? 'DateTime' : 'String');
+    },
+
+<span id='Mz-pivot-dataexport-excel-Worksheet-method-addTitleStyle'>    /**
+</span>    * Add style for the table title
+    * 
+    */
+    addTitleStyle: function () {
+        var me = this;
+        
+        me.addStyle({
+            id: &quot;Title&quot;,
+            attributes: [
+              { name: &quot;Borders&quot; },
+              {
+                  name: &quot;Font&quot;,
+                  properties: [
+                    { name: &quot;Bold&quot;, value: &quot;1&quot; },
+                    { name: &quot;Size&quot;, value: me.titleFontSize }
+                  ]
+              },
+              {
+                  name: &quot;NumberFormat&quot;,
+                  properties: [
+                    { name: &quot;Format&quot;, value: &quot;@&quot; }
+                  ]
+              },
+              me.getInteriorStyle(me.titleFillColor),
+              {
+                  name: &quot;Alignment&quot;,
+                  properties: [
+                    { name: &quot;WrapText&quot;, value: &quot;1&quot; },
+                    { name: &quot;Horizontal&quot;, value: &quot;Center&quot; },
+                    { name: &quot;Vertical&quot;, value: &quot;Center&quot; }
+                  ]
+              }
+            ]
+        });
+    },
+
+<span id='Mz-pivot-dataexport-excel-Worksheet-method-addSummaryStyle'>    /**
+</span>    * Add style for the summary group
+    * 
+    * @param level
+    */
+    addSummaryStyle: function (name, level, fontSize, fillColor) {
+        var me = this,
+            parentStyle = name + level;
+            
+        me.addStyle({
+            id: parentStyle,
+            attributes: [
+              {
+                  name: &quot;Font&quot;,
+                  properties: [
+                    { name: &quot;Bold&quot;, value: &quot;1&quot; },
+                    { name: &quot;Size&quot;, value: fontSize }
+                  ]
+              },
+              me.getInteriorStyle(fillColor),
+              {
+                  name: &quot;Alignment&quot;,
+                  properties: [
+                    { name: &quot;Indent&quot;, value: level - 1 },
+                    { name: &quot;Vertical&quot;, value: &quot;Center&quot; }
+                  ]
+              }
+            ]
+        });
+
+        me.addStyle({
+            id: parentStyle + 'Number',
+            parentStyle: parentStyle,
+            attributes: [
+              {
+                  name: &quot;NumberFormat&quot;,
+                  properties: [{ name: &quot;Format&quot;, value: me.numberFormat }]
+              },
+              {
+                  name: &quot;Alignment&quot;,
+                  properties: [
+                    { name: &quot;Horizontal&quot;, value: &quot;Right&quot; }
+                  ]
+              }
+            ]
+        });
+
+        me.addStyle({
+            id: parentStyle + 'DateTime',
+            parentStyle: parentStyle,
+            attributes: [
+              {
+                  name: &quot;NumberFormat&quot;,
+                  properties: [{ name: &quot;Format&quot;, value: me.dateFormat }]
+              },
+              {
+                  name: &quot;Alignment&quot;,
+                  properties: [
+                    { name: &quot;Horizontal&quot;, value: &quot;Right&quot; }
+                  ]
+              }
+            ]
+        });
+
+        me.addStyle({
+            id: parentStyle + 'String',
+            parentStyle: parentStyle,
+            attributes: [
+              {
+                  name: &quot;Alignment&quot;,
+                  properties: [
+                    { name: &quot;Horizontal&quot;, value: &quot;Left&quot; }
+                  ]
+              }
+            ]
+        });
+
+    },
+    
+<span id='Mz-pivot-dataexport-excel-Worksheet-method-addGroupLevelStyle'>    addGroupLevelStyle: function(level){
+</span>        var me = this,
+            values;
+            
+        // let's see what summary styles we have to add
+        values = Ext.Array.pluck(me.styles, 'id');
+        if(Ext.Array.indexOf(values, 'SummaryHeader' + level) &lt; 0){
+            me.addSummaryStyle('SummaryHeader', level, me.groupHeaderFontSize, me.groupHeaderFillColor);
+            me.addSummaryStyle('SummaryFooter', level, me.groupFooterFontSize, me.groupFooterFillColor);
+        }
+    }
+
+});</pre>
+</body>
+</html>

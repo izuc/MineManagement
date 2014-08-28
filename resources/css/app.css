@@ -1,0 +1,29 @@
+.x-grid-center-icon {
+    margin: 2px 1px 2px 1px;
+}
+
+.x-action-icon-disabled {
+    margin: 2px 1px 2px 1px;
+    opacity: 0.4;
+}
+
+.x-window-header-default-top {
+	box-shadow: none !important;
+}
+
+.x-window-header-text-default {
+	color: #FFF !important;
+}
+
+.x-grid-hd-checker-on .x-column-header-text, .x-grid-row-selected .x-grid-row-checker, .x-grid-row-checked .x-grid-row-checker {
+     background-position: 0 center !important;
+}
+
+.x-grid-row-selected .x-grid-row-checker, .x-grid-row-checked .x-grid-row-checker {
+    background-image: url("../themes/images/default/grid/checked.gif") !important;
+}
+
+.x-grid-row-checker, .x-column-header-checkbox .x-column-header-text {
+    background-color: rgba(0, 0, 0, 0);
+    background-image: url("../themes/images/default/grid/unchecked.gif") !important;
+}

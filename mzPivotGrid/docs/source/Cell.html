@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Mz-pivot-dataexport-excel-Cell'>/**
+</span>*   Class used to create an Excel cell
+*/
+Ext.define('Mz.pivot.dataexport.excel.Cell', {
+<span id='Mz-pivot-dataexport-excel-Cell-method-constructor'>    constructor: function (config) {
+</span>        Ext.applyIf(config, {
+            type:   &quot;String&quot;,
+            style:  'Default'
+        });
+
+        Ext.apply(this, config);
+    },
+
+<span id='Mz-pivot-dataexport-excel-Cell-method-render'>    render: function () {
+</span>        return this.tpl.apply(this);
+    },
+
+<span id='Mz-pivot-dataexport-excel-Cell-property-tpl'>    tpl: new Ext.XTemplate(
+</span>        '&lt;ss:Cell ss:MergeAcross=&quot;{merge}&quot; &lt;tpl if=&quot;style&quot;&gt;ss:StyleID=&quot;{style}&quot;&lt;/tpl&gt;&gt;',
+            '&lt;ss:Data ss:Type=&quot;{type}&quot;&gt;',
+                '&lt;tpl switch=&quot;type&quot;&gt;',
+                    '&lt;tpl case=&quot;String&quot;&gt;',
+                        '{[this.formatString(values.value)]}',
+                    '&lt;tpl default&gt;',
+                        '{value}',
+                '&lt;/tpl&gt;',
+            '&lt;/ss:Data&gt;',
+        '&lt;/ss:Cell&gt;', {
+            formatString: Ext.String.htmlEncode
+        }
+    )
+});</pre>
+</body>
+</html>

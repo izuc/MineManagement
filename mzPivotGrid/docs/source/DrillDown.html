@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Mz-pivot-plugin-DrillDown'>/**
+</span>* 
+* This plugin allows the user to view all records that were aggregated for a specified cell. 
+* The user has to double click that cell to open the viewer.
+*/
+Ext.define('Mz.pivot.plugin.DrillDown', {
+	alias: 'plugin.mzdrilldown',
+
+	extend: 'Ext.AbstractPlugin',
+	
+	requires: [
+        'Mz.pivot.Grid',
+        'Mz.pivot.plugin.drilldown.PagingMemoryProxy',
+		'Ext.window.Window',
+        'Ext.data.Store',
+		'Ext.toolbar.Paging'
+	],
+
+	mixins: {
+        observable: 'Ext.util.Observable'
+    },
+	
+<span id='Mz-pivot-plugin-DrillDown-cfg-columns'>    /**
+</span>    * @cfg {Array} columns Specify which columns should be visible in the grid. 
+    * Use the same definition you would use for a grid column. Header and dataIndex are the most important ones.
+    */
+	columns: 	[],
+<span id='Mz-pivot-plugin-DrillDown-cfg-width'>    /**
+</span>    * @cfg {Integer} width Width of the viewer's window.
+    */    
+	width:		400,
+<span id='Mz-pivot-plugin-DrillDown-cfg-height'>    /**
+</span>    * @cfg {Integer} height Height of the viewer's window.
+    */    
+	height:		300,
+<span id='Mz-pivot-plugin-DrillDown-cfg-textWindow'>    /**
+</span>    * @cfg {String} textWindow Viewer's window title.
+    */    
+	textWindow: 'Drill down window',
+	
+<span id='Mz-pivot-plugin-DrillDown-property-lockableScope'>    /**
+</span>    * @private
+     *  `&quot;both&quot;` (the default) - The plugin is added to both grids
+     *  `&quot;top&quot;` - The plugin is added to the containing Panel
+     *  `&quot;locked&quot;` - The plugin is added to the locked (left) grid
+     *  `&quot;normal&quot;` - The plugin is added to the normal (right) grid
+    * 
+    * @type String
+    */
+    lockableScope:  'top',
+    
+<span id='Mz-pivot-plugin-DrillDown-method-init'>	init: function(grid){
+</span>	    // this plugin is available only for the pivot grid
+		var me = this;
+
+        me.gridListeners = grid.on({
+            afterrender:    me.onGridRendered,
+            scope:          me,
+            destroyable:    true
+        });
+        
+        me.callParent(arguments);        
+	},
+	
+<span id='Mz-pivot-plugin-DrillDown-method-destroy'>	destroy: function(){
+</span>		var me = this;
+		
+		Ext.destroy(me.view, me.gridListeners, me.pivotListeners);
+		delete me.pivot;
+		delete me.view;
+	},
+    
+<span id='Mz-pivot-plugin-DrillDown-method-onGridRendered'>    onGridRendered: function(grid){
+</span>        var me = this;
+        
+        me.pivot = (Mz.pivot.Grid &amp;&amp; grid instanceof Mz.pivot.Grid) ? grid : grid.up('mzpivotgrid');
+        if (!me.pivot || (me.pivot &amp;&amp; me.pivot.hasDrillDown)) return;
+
+        me.pivot.hasDrillDown = true;
+        me.pivotListeners = me.pivot.on({
+            pivotitemcelldblclick:      me.runPlugin,
+            pivotgroupcelldblclick:     me.runPlugin,
+            pivottotalcelldblclick:     me.runPlugin,
+            scope:                      me,
+            destroyable:                true
+        });
+    },
+
+<span id='Mz-pivot-plugin-DrillDown-method-showView'>	showView: function(records){
+</span>	    var me = this;
+
+	    if (!me.view) {
+	        var fields = me.pivot.getMatrix().store.model.getFields(),
+			    columns = me.columns,
+                extjsVersion = Ext.getVersion('extjs'),
+			    proxy = 'mzpagingmemory',
+                store;
+            
+            if (extjsVersion.isGreaterThanOrEqual &amp;&amp; extjsVersion.isGreaterThanOrEqual(5.0)){
+                proxy = 'memory';
+            }
+            
+            store = Ext.create('Ext.data.Store', {
+                pageSize: 25,
+                remoteSort: true,
+                fields: Ext.clone(fields),
+                proxy: {
+                    type: proxy,
+                    reader: {
+                        type: 'array'
+                    }
+                }
+            });
+            
+	        // if no columns are defined then use those defined in the pivot grid store
+	        if (columns.length === 0) {
+	            Ext.Array.each(fields, function (value, index, all) {
+	                columns.push({
+	                    header: Ext.String.capitalize(value.name),
+	                    dataIndex: value.name
+	                });
+	            });
+	        }
+
+	        // create the window that will show the records
+	        me.view = Ext.create('Ext.window.Window', {
+	            title: me.textWindow,
+	            width: me.width,
+	            height: me.height,
+	            layout: 'fit',
+	            modal: true,
+	            closeAction: 'hide',
+	            items: [{
+	                xtype: 'grid',
+	                border: false,
+	                viewConfig: {
+	                    loadMask: false
+	                },
+	                columns: columns,
+	                store: store,
+	                dockedItems: [{
+	                    itemId: 'idPager',
+	                    xtype: 'pagingtoolbar',
+	                    store: store,   // same store GridPanel is using
+	                    dock: 'bottom',
+	                    displayInfo: true
+	                }]
+	            }]
+	        });
+
+	        me.store = store;
+	    }
+	    me.store.getProxy().data = records;
+	    me.store.load();
+	    me.view.down('#idPager').moveFirst();
+	    me.view.show();
+	},
+	
+<span id='Mz-pivot-plugin-DrillDown-method-runPlugin'>	runPlugin: function(params, e, eOpts){
+</span>		// do nothing if the plugin is disabled
+		if(this.disabled) return;
+		
+		var me = this,
+			matrix = me.pivot.getMatrix(),
+			result;
+		
+		if(params.topKey){
+		    result = matrix.results.get(params.leftKey, params.topKey);
+            if(result){
+                me.showView(result.records);
+            }
+		}
+	}
+	
+});</pre>
+</body>
+</html>

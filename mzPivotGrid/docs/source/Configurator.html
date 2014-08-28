@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Mz-pivot-plugin-Configurator'>/**
+</span>* 
+* This plugin allows the user to configure the pivot grid using drag and drop.
+*/
+Ext.define('Mz.pivot.plugin.Configurator', {
+    extend: 'Ext.AbstractPlugin',
+    requires: [
+        'Ext.util.DelayedTask',
+        'Ext.menu.Menu',        
+        'Ext.menu.CheckItem',        
+        'Mz.pivot.plugin.configurator.Panel'
+    ],
+
+    alias: 'plugin.mzconfigurator',
+    
+<span id='Mz-pivot-plugin-Configurator-cfg-fields'>    /**
+</span>    * @cfg {Array} fields This is the array of fields you want to be used in the configurator.
+    * Each field is an object with the following properties: dataIndex, header.
+    * If no fields are defined then the model fields are taken.
+    * 
+    */
+    fields:         [],
+    
+<span id='Mz-pivot-plugin-Configurator-cfg-refreshDelay'>    /**
+</span>    * @cfg {Number} refreshDelay Number of miliseconds to wait for pivot refreshing when a config change occured.
+    */
+    refreshDelay:   300,
+
+<span id='Mz-pivot-plugin-Configurator-property-lockableScope'>    /**
+</span>    * @private
+     *  `&quot;both&quot;` (the default) - The plugin is added to both grids
+     *  `&quot;top&quot;` - The plugin is added to the containing Panel
+     *  `&quot;locked&quot;` - The plugin is added to the locked (left) grid
+     *  `&quot;normal&quot;` - The plugin is added to the normal (right) grid
+    * 
+    * @type String
+    */
+    lockableScope:  'top',
+
+<span id='Mz-pivot-plugin-Configurator-method-init'>    init: function(grid) {
+</span>        var me = this;
+
+        if(grid.down('mzconfigpanel')){
+            return;
+        }
+        
+        me.grid = grid;
+        me.fields = Ext.Array.from(me.fields);
+
+        me.gridListeners = me.grid.on({
+            beforerender:   me.onBeforeGridRendered,
+            afterrender:    me.onAfterGridRendered,
+            single:         true,
+            scope:          me,
+            destroyable:    true
+        });
+        
+    },
+
+<span id='Mz-pivot-plugin-Configurator-method-destroy'>    /**
+</span>     * @private
+     * AbstractComponent calls destroy on all its plugins at destroy time.
+     */
+    destroy: function() {
+        var me = this;
+
+        delete me.grid;
+        delete me.fields;
+        if(me.gridMaster){
+            delete me.gridMaster;
+        }
+        Ext.destroy(me.fieldsCt, me.gridListeners, me.gridStateListeners);
+        me.callParent(arguments);
+    },
+    
+<span id='Mz-pivot-plugin-Configurator-method-enable'>    /**
+</span>    * Enable the plugin to show the configurator panel.
+    * 
+    */
+    enable: function() {
+        var me = this;
+
+        me.disabled = false;
+        
+        if(me.configCt){
+            me.configCt.enable();
+        }
+        if(me.gridMaster){
+            me.gridMaster.fireEvent('showconfigpanel', me.configCt);
+        }
+    },
+    
+<span id='Mz-pivot-plugin-Configurator-method-disable'>    /**
+</span>    * Disable the plugin to hide the configurator panel.
+    * 
+    */
+    disable: function() {
+        var me = this;
+
+        me.disabled = true;
+        
+        if(me.configCt){
+            me.configCt.disable();
+        }
+        if(me.gridMaster){
+            me.gridMaster.fireEvent('hideconfigpanel', me.configCt);
+        }
+    },
+    
+<span id='Mz-pivot-plugin-Configurator-method-onBeforeGridRendered'>    onBeforeGridRendered: function(){
+</span>        var me = this;
+        
+        if(me.grid instanceof Mz.pivot.Grid){
+            me.gridMaster = me.grid;
+        }else{
+            me.gridMaster = me.grid.up('mzpivotgrid');
+        }
+        
+        if(!me.gridMaster){
+            me.destroy();
+            return;
+        }
+        
+        // if the grid is locked and ExtJS version is 4.1.1 then lockableScope doesn't work
+        if(me.gridMaster.down('mzconfigpanel')){
+            // do nothing; there is already a plugin instance that deals with the grid
+            me.destroy();
+            return;
+        }
+        
+        me.configCt = me.gridMaster.addDocked({
+            xtype:          'mzconfigpanel',
+            grid:           me.gridMaster,
+            fields:         me.fields,
+            refreshDelay:   me.refreshDelay
+        })[0];
+        
+        if (!Ext.getVersion('extjs').match(5.0)) {
+            me.gridMaster.addEvents(
+<span id='Mz-pivot-plugin-Configurator-event-configchange'>                /**
+</span>                * @event configchange
+                * @param {Mz.pivot.plugin.Configurator} panel
+                * @param {Object} config
+                */
+                'configchange',
+                
+<span id='Mz-pivot-plugin-Configurator-event-fieldsort'>                /**
+</span>                * @event fieldsort
+                * @param {Mz.pivot.plugin.configurator.Column} col
+                * @param String direction
+                */
+                'fieldsort',
+                
+<span id='Mz-pivot-plugin-Configurator-event-showconfigpanel'>                /**
+</span>                * @event showconfigpanel
+                * @param {Mz.pivot.plugin.configurator.Panel} panel
+                */
+                'showconfigpanel',
+                
+<span id='Mz-pivot-plugin-Configurator-event-hideconfigpanel'>                /**
+</span>                * @event hideconfigpanel
+                * @param {Mz.pivot.plugin.configurator.Panel} panel
+                */
+                'hideconfigpanel'
+            );
+        }
+    },
+    
+<span id='Mz-pivot-plugin-Configurator-method-onAfterGridRendered'>    onAfterGridRendered: function(){
+</span>        var me = this;
+        
+        if(me.disabled === true){
+            me.disable();
+        }else{
+            me.enable();
+        }
+    }
+    
+
+});</pre>
+</body>
+</html>

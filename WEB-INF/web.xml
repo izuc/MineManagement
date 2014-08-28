@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app version="2.5" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+  <servlet>
+    <servlet-name>DjnServlet</servlet-name>
+    <servlet-class>com.softwarementors.extjs.djn.servlet.DirectJNgineServlet</servlet-class>
+    
+    <init-param>
+      <param-name>debug</param-name>
+      <param-value>false</param-value>
+    </init-param>   
+
+    <init-param>
+      <param-name>minify</param-name>
+      <param-value>true</param-value>
+    </init-param>
+
+    <init-param>
+      <param-name>createSourceFiles</param-name><param-value>true</param-value>
+    </init-param>
+
+    <init-param>
+      <param-name>providersUrl</param-name>
+      <param-value>/djn/directprovider</param-value>
+    </init-param>
+
+    <init-param>
+      <param-name>batchRequestsMultithreadingEnabled</param-name>
+      <param-value>true</param-value>
+    </init-param>
+
+    <init-param>
+      <param-name>apis</param-name>
+      <param-value>
+        mining
+      </param-value>
+    </init-param>
+    
+    <init-param>
+      <param-name>mining.apiFile</param-name>
+      <param-value>js/Api.js</param-value>
+    </init-param>
+
+     <init-param>
+	  <param-name>mining.apiNamespace</param-name>
+	  <param-value>Ext.app</param-value>
+	</init-param>
+	
+	<init-param>
+	  <param-name>mining.classes</param-name>
+	  <param-value>
+	  bol.modules.AccessGroup,
+	  bol.modules.Loads,
+	  bol.modules.Module,
+	  bol.modules.Section,
+	  bol.modules.User,
+	  bol.modules.SessionLog,
+	  bol.modules.Database,
+	  bol.modules.Graph,
+	  bol.modules.Realtime,
+	  bol.modules.Slider
+	  </param-value>
+	</init-param>
+
+    <load-on-startup>1</load-on-startup>
+  </servlet>  
+  
+  <servlet-mapping>
+    <servlet-name>DjnServlet</servlet-name>
+    <url-pattern>/djn/directprovider/*</url-pattern>
+  </servlet-mapping>
+  
+    <session-config>
+        <session-timeout>
+            30
+        </session-timeout>
+    </session-config>
+    <welcome-file-list>
+        <welcome-file>index.jsp</welcome-file>
+    </welcome-file-list>
+</web-app>

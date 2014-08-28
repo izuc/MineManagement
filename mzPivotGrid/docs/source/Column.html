@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Mz-pivot-plugin-configurator-Column'>/**
+</span>* @private
+* 
+* This class is used for creating a configuration field.
+* 
+*/
+Ext.define('Mz.pivot.plugin.configurator.Column',{
+    extend: 'Ext.Component',
+    
+    requires: [
+        'Ext.menu.Menu',
+        'Mz.pivot.plugin.configurator.FilterLabelWindow'
+    ],
+    
+    alias: 'widget.mzconfigcolumn',
+    
+<span id='Mz-pivot-plugin-configurator-Column-property-childEls'>    childEls: ['textCol', 'filterCol', 'sortCol'],
+</span>    
+<span id='Mz-pivot-plugin-configurator-Column-property-renderTpl'>    renderTpl: 
+</span>        '&lt;div id=&quot;{id}-configCol&quot; class=&quot;' + Ext.baseCSSPrefix + 'config-column-inner&quot;&gt;' +
+            '&lt;tpl if=&quot;isCustomizable&quot;&gt;' +
+                '&lt;span id={id}-customCol class=&quot;' + Ext.baseCSSPrefix + 'config-column-customize&quot;&gt;&lt;/span&gt;' +
+            '&lt;/tpl&gt;' +
+            '&lt;span id=&quot;{id}-textCol&quot; class=&quot;' + Ext.baseCSSPrefix + 'config-column-text ' + Ext.baseCSSPrefix + 'column-header-text&quot;&gt;' + 
+                '{header}{aggregator}' +
+            '&lt;/span&gt;' +
+            '&lt;span id={id}-sortCol class=&quot;&quot;&gt;&lt;/span&gt;' +
+            '&lt;span id={id}-filterCol class=&quot;&quot;&gt;&lt;/span&gt;' +
+        '&lt;/div&gt;',
+        
+<span id='Mz-pivot-plugin-configurator-Column-property-header'>    header:         '&amp;#160;',
+</span><span id='Mz-pivot-plugin-configurator-Column-property-isCustomizable'>    isCustomizable: false,
+</span><span id='Mz-pivot-plugin-configurator-Column-property-dimension'>    dimension:      null,
+</span><span id='Mz-pivot-plugin-configurator-Column-property-isAgg'>    isAgg:          false,
+</span>
+<span id='Mz-pivot-plugin-configurator-Column-property-sumText'>    sumText:                    'Sum',
+</span><span id='Mz-pivot-plugin-configurator-Column-property-avgText'>    avgText:                    'Avg',
+</span><span id='Mz-pivot-plugin-configurator-Column-property-countText'>    countText:                  'Count',
+</span><span id='Mz-pivot-plugin-configurator-Column-property-minText'>    minText:                    'Min',
+</span><span id='Mz-pivot-plugin-configurator-Column-property-maxText'>    maxText:                    'Max',
+</span><span id='Mz-pivot-plugin-configurator-Column-property-groupSumPercentageText'>    groupSumPercentageText:     'Group sum percentage',
+</span><span id='Mz-pivot-plugin-configurator-Column-property-groupCountPercentageText'>    groupCountPercentageText:   'Group count percentage',
+</span>
+<span id='Mz-pivot-plugin-configurator-Column-property-sortAscText'>    sortAscText:                'Sort A to Z',
+</span><span id='Mz-pivot-plugin-configurator-Column-property-sortDescText'>    sortDescText:               'Sort Z to A',
+</span><span id='Mz-pivot-plugin-configurator-Column-property-sortClearText'>    sortClearText:              'Disable sorting',
+</span><span id='Mz-pivot-plugin-configurator-Column-property-clearFilterText'>    clearFilterText:            'Clear filter from &quot;{0}&quot;',
+</span><span id='Mz-pivot-plugin-configurator-Column-property-labelFiltersText'>    labelFiltersText:           'Label filters',
+</span><span id='Mz-pivot-plugin-configurator-Column-property-valueFiltersText'>    valueFiltersText:           'Value filters',
+</span><span id='Mz-pivot-plugin-configurator-Column-property-equalsText'>    equalsText:                 'Equals...',
+</span><span id='Mz-pivot-plugin-configurator-Column-property-doesNotEqualText'>    doesNotEqualText:           'Does not equal...',
+</span><span id='Mz-pivot-plugin-configurator-Column-property-beginsWithText'>    beginsWithText:             'Begins with...',
+</span><span id='Mz-pivot-plugin-configurator-Column-property-doesNotBeginWithText'>    doesNotBeginWithText:       'Does not begin with...',
+</span><span id='Mz-pivot-plugin-configurator-Column-property-endsWithText'>    endsWithText:               'Ends with...',
+</span><span id='Mz-pivot-plugin-configurator-Column-property-doesNotEndWithText'>    doesNotEndWithText:         'Does not end with...',
+</span><span id='Mz-pivot-plugin-configurator-Column-property-containsText'>    containsText:               'Contains...',
+</span><span id='Mz-pivot-plugin-configurator-Column-property-doesNotContainText'>    doesNotContainText:         'Does not contain...',
+</span><span id='Mz-pivot-plugin-configurator-Column-property-greaterThanText'>    greaterThanText:            'Greater than...',
+</span><span id='Mz-pivot-plugin-configurator-Column-property-greaterThanOrEqualToText'>    greaterThanOrEqualToText:   'Greater than or equal to...',
+</span><span id='Mz-pivot-plugin-configurator-Column-property-lessThanText'>    lessThanText:               'Less than...',
+</span><span id='Mz-pivot-plugin-configurator-Column-property-lessThanOrEqualToText'>    lessThanOrEqualToText:      'Less than or equal to...',
+</span><span id='Mz-pivot-plugin-configurator-Column-property-betweenText'>    betweenText:                'Between...',
+</span><span id='Mz-pivot-plugin-configurator-Column-property-notBetweenText'>    notBetweenText:             'Not between...',
+</span><span id='Mz-pivot-plugin-configurator-Column-property-top10Text'>    top10Text:                  'Top 10...',
+</span>
+<span id='Mz-pivot-plugin-configurator-Column-property-equalsLText'>    equalsLText:                'equals',
+</span><span id='Mz-pivot-plugin-configurator-Column-property-doesNotEqualLText'>    doesNotEqualLText:          'does not equal',
+</span><span id='Mz-pivot-plugin-configurator-Column-property-beginsWithLText'>    beginsWithLText:            'begins with',
+</span><span id='Mz-pivot-plugin-configurator-Column-property-doesNotBeginWithLText'>    doesNotBeginWithLText:      'does not begin with',
+</span><span id='Mz-pivot-plugin-configurator-Column-property-endsWithLText'>    endsWithLText:              'ends with',
+</span><span id='Mz-pivot-plugin-configurator-Column-property-doesNotEndWithLText'>    doesNotEndWithLText:        'does not end with',
+</span><span id='Mz-pivot-plugin-configurator-Column-property-containsLText'>    containsLText:              'contains',
+</span><span id='Mz-pivot-plugin-configurator-Column-property-doesNotContainLText'>    doesNotContainLText:        'does not contain',
+</span><span id='Mz-pivot-plugin-configurator-Column-property-greaterThanLText'>    greaterThanLText:           'is greater than',
+</span><span id='Mz-pivot-plugin-configurator-Column-property-greaterThanOrEqualToLText'>    greaterThanOrEqualToLText:  'is greater than or equal to',
+</span><span id='Mz-pivot-plugin-configurator-Column-property-lessThanLText'>    lessThanLText:              'is less than',
+</span><span id='Mz-pivot-plugin-configurator-Column-property-lessThanOrEqualToLText'>    lessThanOrEqualToLText:     'is less than or equal to',
+</span><span id='Mz-pivot-plugin-configurator-Column-property-betweenLText'>    betweenLText:               'is between',
+</span><span id='Mz-pivot-plugin-configurator-Column-property-notBetweenLText'>    notBetweenLText:            'is not between',
+</span><span id='Mz-pivot-plugin-configurator-Column-property-top10LText'>    top10LText:                 'Top 10...',
+</span><span id='Mz-pivot-plugin-configurator-Column-property-topOrderTopText'>    topOrderTopText:            'Top',
+</span><span id='Mz-pivot-plugin-configurator-Column-property-topOrderBottomText'>    topOrderBottomText:         'Bottom',
+</span><span id='Mz-pivot-plugin-configurator-Column-property-topTypeItemsText'>    topTypeItemsText:           'Items',
+</span><span id='Mz-pivot-plugin-configurator-Column-property-topTypePercentText'>    topTypePercentText:         'Percent',
+</span><span id='Mz-pivot-plugin-configurator-Column-property-topTypeSumText'>    topTypeSumText:             'Sum',
+</span>
+<span id='Mz-pivot-plugin-configurator-Column-property-ascSortCls'>    ascSortCls:         Ext.baseCSSPrefix + 'config-column-sort-ASC',
+</span><span id='Mz-pivot-plugin-configurator-Column-property-descSortCls'>    descSortCls:        Ext.baseCSSPrefix + 'config-column-sort-DESC',
+</span><span id='Mz-pivot-plugin-configurator-Column-property-baseCls'>    baseCls:            Ext.baseCSSPrefix + 'config-column',
+</span><span id='Mz-pivot-plugin-configurator-Column-property-filteredCls'>    filteredCls:        Ext.baseCSSPrefix + 'config-column-filtered',
+</span><span id='Mz-pivot-plugin-configurator-Column-property-clearFilterIconCls'>    clearFilterIconCls: Ext.baseCSSPrefix + 'clearFilterIcon',
+</span><span id='Mz-pivot-plugin-configurator-Column-property-ascSortIconCls'>    ascSortIconCls:     Ext.baseCSSPrefix + 'sortAscIcon',
+</span><span id='Mz-pivot-plugin-configurator-Column-property-descSortIconCls'>    descSortIconCls:    Ext.baseCSSPrefix + 'sortDescIcon',
+</span><span id='Mz-pivot-plugin-configurator-Column-property-disableSortIconCls'>    disableSortIconCls: Ext.baseCSSPrefix + 'sortDisableIcon',
+</span>    
+<span id='Mz-pivot-plugin-configurator-Column-property-height'>    //height:         '100%',
+</span>    height:         26,
+    
+<span id='Mz-pivot-plugin-configurator-Column-method-initComponent'>    initComponent: function() {
+</span>        var me = this;
+        
+        me.callParent(arguments);
+        
+        if (!Ext.getVersion('extjs').match(5.0)) {
+            me.addEvents(
+<span id='Mz-pivot-plugin-configurator-Column-event-sortchange'>                /**
+</span>                * @event sortchange
+                * @param {Mz.pivot.plugin.configurator.Column} col
+                * @param String direction
+                */
+                'sortchange',
+                
+                'filterchange'
+                
+            );
+        }
+    },
+    
+<span id='Mz-pivot-plugin-configurator-Column-method-destroy'>    destroy: function(){
+</span>        var me = this;
+        
+        delete(me.dimension);
+        Ext.destroy(me.relayers, me.menu);
+        me.callParent(arguments);
+    },
+    
+<span id='Mz-pivot-plugin-configurator-Column-method-show'>    show: function(){
+</span>        var me = this;
+        
+        me.callParent();
+    },
+    
+<span id='Mz-pivot-plugin-configurator-Column-method-initRenderData'>    initRenderData: function() {
+</span>        var me = this;
+
+        return Ext.apply(me.callParent(arguments), {
+            header:         me.dimension.header,
+            aggregator:     me.isAgg ? ' (' + me.dimension.aggregator + ')' : '',
+            dimension:      me.dimension,
+            isCustomizable: me.isCustomizable
+        });
+    },
+    
+<span id='Mz-pivot-plugin-configurator-Column-method-afterRender'>    afterRender: function(){
+</span>        var me = this;
+        
+        me.callParent();
+
+        if(me.isCustomizable){
+            if(me.dimension.sortable){
+                me.addSortCls(me.dimension.direction);
+            }
+            
+            if(me.dimension.filter){
+                me.addFilterCls();
+            }
+
+            me.mon(me.getTargetEl(), {
+                scope: me,
+                click: me.handleColClick
+            });
+        } 
+        
+    },
+
+<span id='Mz-pivot-plugin-configurator-Column-method-handleColClick'>    handleColClick: function(e, t){
+</span>        // handles grid column sorting
+        var me = this;
+        
+        if(me.isAgg){
+            me.showAggMenu();
+            e.stopEvent();
+        }else{
+            me.showColMenu();
+        }
+    },
+    
+<span id='Mz-pivot-plugin-configurator-Column-method-handleMenuClick'>    handleMenuClick: function(item, e){
+</span>        var me = this;
+        
+        me.dimension.aggregator = item.aggregator;
+        me.textCol.setHTML(me.header + ' (' + me.dimension.aggregator + ')');
+        me.ownerCt.updateLayout();
+        me.fireEvent('configchange');
+    },
+    
+<span id='Mz-pivot-plugin-configurator-Column-method-addSortCls'>    addSortCls: function(direction){
+</span>        var me = this;
+        
+        if(!me.sortCol){
+            return;
+        }
+        
+        if(direction === 'ASC'){
+            me.sortCol.addCls(me.ascSortCls);
+            me.sortCol.removeCls(me.descSortCls);
+        }else{
+            me.sortCol.addCls(me.descSortCls);
+            me.sortCol.removeCls(me.ascSortCls);
+        }
+
+    },
+    
+<span id='Mz-pivot-plugin-configurator-Column-method-removeSortCls'>    removeSortCls: function(direction){
+</span>        var me = this;
+        
+        if(!me.sortCol){
+            return;
+        }
+        
+        if(direction === 'ASC'){
+            me.sortCol.removeCls(me.ascSortCls);
+        }else{
+            me.sortCol.removeCls(me.descSortCls);
+        }
+
+    },
+    
+<span id='Mz-pivot-plugin-configurator-Column-method-addFilterCls'>    addFilterCls: function(){
+</span>        var me = this;
+        
+        if(me.filterCol &amp;&amp; !me.filterCol.hasCls(me.filteredCls)){
+            me.filterCol.addCls(me.filteredCls);
+        }
+    },
+    
+<span id='Mz-pivot-plugin-configurator-Column-method-removeFilterCls'>    removeFilterCls: function(){
+</span>        var me = this;
+        
+        if(me.filterCol){
+            me.filterCol.removeCls(me.filteredCls);
+        }
+    },
+
+<span id='Mz-pivot-plugin-configurator-Column-method-serialize'>    serialize: function(){
+</span>        var me = this;
+        
+        return Ext.applyIf({
+            idColumn:       me.id
+        }, me.initialConfig);
+    },
+    
+<span id='Mz-pivot-plugin-configurator-Column-method-showAggMenu'>    showAggMenu: function(){
+</span>        var me = this,
+            aggregator = me.dimension.aggregator;
+        
+        //create a menu with possible aggregate functions
+        Ext.destroy(me.menu);
+        me.menu = Ext.create('Ext.menu.Menu', {
+            floating:   true,
+            defaults: {
+                handler:    me.handleMenuClick,
+                scope:      me,
+                xtype:      'menucheckitem',
+                group:      'aggregator'
+            },
+            items: [{
+                text:       me.sumText,
+                aggregator: 'sum',
+                checked:    aggregator == 'sum'
+            },{
+                text:       me.avgText,
+                aggregator: 'avg',
+                checked:    aggregator == 'avg'
+            },{
+                text:       me.countText,
+                aggregator: 'count',
+                checked:    aggregator == 'count'
+            },{
+                text:       me.maxText,
+                aggregator: 'max',
+                checked:    aggregator == 'max'
+            },{
+                text:       me.minText,
+                aggregator: 'min',
+                checked:    aggregator == 'min'
+            },{
+                text:       me.groupSumPercentageText,
+                aggregator: 'groupSumPercentage',
+                checked:    aggregator == 'groupSumPercentage'
+            },{
+                text:       me.groupCountPercentageText,
+                aggregator: 'groupCountPercentage',
+                checked:    aggregator == 'groupCountPercentage'
+            }]
+        });
+        me.menu.showBy(me);
+    },
+    
+<span id='Mz-pivot-plugin-configurator-Column-method-showColMenu'>    showColMenu: function(){
+</span>        var me = this,
+            items = [], 
+            labelItems, valueItems, commonItems, i,
+            filter = me.dimension.filter;
+
+        Ext.destroy(me.menu);
+        
+        // check if the dimension is sortable
+        items.push({
+            text:       me.sortAscText,
+            direction:  'ASC',
+            iconCls:    me.ascSortIconCls,
+            handler:    me.sortMe
+        }, {
+            text:       me.sortDescText,
+            direction:  'DESC',
+            iconCls:    me.descSortIconCls,
+            handler:    me.sortMe
+        }, {
+            text:       me.sortClearText,
+            direction:  '',
+            disabled:   !me.dimension.sortable,
+            iconCls:    me.disableSortIconCls,
+            handler:    me.sortMe
+        },{
+            xtype:  'menuseparator'
+        });
+        
+        commonItems = [{
+            text:       me.equalsText,
+            filterType: Mz.aggregate.filter.Label.TypeEquals
+        },{
+            text:       me.doesNotEqualText,
+            filterType: Mz.aggregate.filter.Label.TypeDoesNotEqual
+        },{
+            xtype:  'menuseparator'
+        },{
+            text:       me.greaterThanText,
+            filterType: Mz.aggregate.filter.Label.TypeGreaterThan
+        },{
+            text:       me.greaterThanOrEqualToText,
+            filterType: Mz.aggregate.filter.Label.TypeGreaterThanOrEqualTo
+        },{
+            text:       me.lessThanText,
+            filterType: Mz.aggregate.filter.Label.TypeLessThan
+        },{
+            text:       me.lessThanOrEqualToText,
+            filterType: Mz.aggregate.filter.Label.TypeLessThanOrEqualTo
+        },{
+            xtype:  'menuseparator'
+        },{
+            text:       me.betweenText,
+            filterType: Mz.aggregate.filter.Label.TypeBetween
+        },{
+            text:       me.notBetweenText,
+            filterType: Mz.aggregate.filter.Label.TypeNotBetween
+        }];
+
+        labelItems = Ext.clone(commonItems);
+        Ext.Array.insert(labelItems, 3, [{
+            text:       me.beginsWithText,
+            filterType: Mz.aggregate.filter.Label.TypeBeginsWith
+        },{
+            text:       me.doesNotBeginWithText,
+            filterType: Mz.aggregate.filter.Label.TypeDoesNotBeginWith
+        },{
+            text:       me.endsWithText,
+            filterType: Mz.aggregate.filter.Label.TypeEndsWith
+        },{
+            text:       me.doesNotEndWithText,
+            filterType: Mz.aggregate.filter.Label.TypeDoesNotEndWith
+        },{
+            xtype:  'menuseparator'
+        },{
+            text:       me.containsText,
+            filterType: Mz.aggregate.filter.Label.TypeContains
+        },{
+            text:       me.doesNotContainText,
+            filterType: Mz.aggregate.filter.Label.TypeDoesNotContain
+        },{
+            xtype:  'menuseparator'
+        }]);
+
+        for(i = 0; i &lt; labelItems.length; i++){
+            labelItems[i]['checked'] = (filter &amp;&amp; filter.mztype == 'label' &amp;&amp; filter.type == labelItems[i].filterType);
+        }
+        
+        valueItems = Ext.clone(commonItems);
+        valueItems.push({
+            xtype:  'menuseparator'
+        },{
+            text:       me.top10Text,
+            filterType: Mz.aggregate.filter.Value.TypeTop10
+        });
+
+        for(i = 0; i &lt; valueItems.length; i++){
+            valueItems[i]['checked'] = (filter &amp;&amp; filter.mztype == 'value' &amp;&amp; filter.type == valueItems[i].filterType);
+        }
+        
+        items.push({
+            text:       Ext.String.format(me.clearFilterText, me.header),
+            iconCls:    me.clearFilterIconCls,
+            disabled:   !filter,
+            handler:    me.onRemoveFilter
+        },{
+            text:   me.labelFiltersText,
+            menu: {
+                defaults: {
+                    handler:    me.onShowFilter,
+                    scope:      me,
+                    xtype:      'menucheckitem',
+                    group:      'filterlabel',
+                    mztype:     'label'
+                },
+                items: labelItems
+            }
+        },{
+            text:   me.valueFiltersText,
+            menu: {
+                defaults: {
+                    handler:    me.onShowFilter,
+                    scope:      me,
+                    xtype:      'menucheckitem',
+                    group:      'filtervalue',
+                    mztype:     'value'
+                },
+                items: valueItems
+            }
+        });
+        
+        me.menu = Ext.create('Ext.menu.Menu', {
+            floating:   true,
+            defaults: {
+                scope:      me
+            },
+            items: items
+        });
+        me.menu.showBy(me);
+    },
+    
+<span id='Mz-pivot-plugin-configurator-Column-method-sortMe'>    sortMe: function(btn){
+</span>        var me = this;
+            
+        if(Ext.isEmpty(btn.direction)){
+            //disable sorting
+            me.dimension.sortable = false;
+            me.removeSortCls(me.dimension.direction);
+        }else{
+            me.dimension.sortable = true;
+            me.addSortCls(btn.direction);
+            me.dimension.direction = btn.direction;
+        }
+        me.fireEvent('sortchange', me, btn.direction);
+    },
+    
+<span id='Mz-pivot-plugin-configurator-Column-method-onShowFilter'>    onShowFilter: function(btn){
+</span>        var me = this,
+            win, store, winClass, winCfg = {}, data, dataAgg,
+            filter = me.dimension.filter,
+            values = {
+                mztype:         btn.mztype,
+                type:           btn.filterType,
+                value:          (filter ? filter.value : ''),
+                from:           (filter ? filter.from : ''),
+                to:             (filter ? filter.to : ''),
+                caseSensitive:  (filter ? filter.caseSensitive : false)
+            };
+        
+        dataAgg = [];
+        Ext.each(me.ownerCt.aggregateDimensions, function(field){
+            dataAgg.push([field.header, field.id]);
+        });
+
+        if(btn.mztype == 'label' || (btn.mztype == 'value' &amp;&amp; btn.filterType != Mz.aggregate.filter.Value.TypeTop10)){
+            data = [
+                [me.equalsLText, Mz.aggregate.filter.Label.TypeEquals],
+                [me.doesNotEqualLText, Mz.aggregate.filter.Label.TypeDoesNotEqual],
+                [me.greaterThanLText, Mz.aggregate.filter.Label.TypeGreaterThan],
+                [me.greaterThanOrEqualToLText, Mz.aggregate.filter.Label.TypeGreaterThanOrEqualTo],
+                [me.lessThanLText, Mz.aggregate.filter.Label.TypeLessThan],
+                [me.lessThanOrEqualToLText, Mz.aggregate.filter.Label.TypeLessThanOrEqualTo],
+                [me.betweenLText, Mz.aggregate.filter.Label.TypeBetween],
+                [me.notBetweenLText, Mz.aggregate.filter.Label.TypeNotBetween]
+            ];
+            
+            if(btn.mztype == 'label'){
+                Ext.Array.insert(data, 3, [
+                    [me.beginsWithLText, Mz.aggregate.filter.Label.TypeBeginsWith],
+                    [me.doesNotBeginWithLText, Mz.aggregate.filter.Label.TypeDoesNotBeginWith],
+                    [me.endsWithLText, Mz.aggregate.filter.Label.TypeEndsWith],
+                    [me.doesNotEndWithLText, Mz.aggregate.filter.Label.TypeDoesNotEndWith],
+                    [me.containsLText, Mz.aggregate.filter.Label.TypeContains],
+                    [me.doesNotContainLText, Mz.aggregate.filter.Label.TypeDoesNotContain]
+                ]);
+                winClass = 'Mz.pivot.plugin.configurator.FilterLabelWindow';
+            }else{
+                winClass = 'Mz.pivot.plugin.configurator.FilterValueWindow';
+                Ext.apply(values, {
+                    dimensionId:    (filter ? filter.dimensionId : '')
+                });
+                
+                winCfg.storeAgg = Ext.create('Ext.data.ArrayStore', {
+                    fields: ['text', 'value'],
+                    data:   dataAgg
+                });
+            }
+            
+            winCfg.store = Ext.create('Ext.data.ArrayStore', {
+                fields: ['text', 'value'],
+                data:   data
+            });
+        }else{
+            winClass = 'Mz.pivot.plugin.configurator.FilterTopWindow';
+            data = [];
+
+            Ext.apply(winCfg, {
+                storeTopOrder: Ext.create('Ext.data.ArrayStore', {
+                    fields: ['text', 'value'],
+                    data:[
+                        [me.topOrderTopText, 'top'],
+                        [me.topOrderBottomText, 'bottom']
+                    ]
+                }),
+                storeTopType: Ext.create('Ext.data.ArrayStore', {
+                    fields: ['text', 'value'],
+                    data:[
+                        [me.topTypeItemsText, 'items'],
+                        [me.topTypePercentText, 'percent'],
+                        [me.topTypeSumText, 'sum']
+                    ]
+                }),
+                storeAgg: Ext.create('Ext.data.ArrayStore', {
+                    fields: ['text', 'value'],
+                    data:   dataAgg
+                })
+            });
+
+            Ext.apply(values, {
+                type:           Mz.aggregate.filter.Value.TypeTop10,
+                dimensionId:    (filter ? filter.dimensionId : ''),
+                topType:        (filter ? filter.topType : 'items'),
+                topOrder:       (filter ? filter.topOrder : 'top')
+            });
+        }
+        
+        win = Ext.create(winClass, Ext.apply(winCfg || {}, {
+            title:      me.header,
+            listeners: {
+                filter: me.onApplyFilter,
+                scope:  me
+            }
+        }));
+        
+        win.down('form').getForm().setValues(values);
+        win.show();
+    },
+    
+<span id='Mz-pivot-plugin-configurator-Column-method-onApplyFilter'>    onApplyFilter: function(win){
+</span>        var me = this,
+            filter = win.down('form').getForm().getValues();
+        
+        filter.caseSensitive = (filter.caseSensitive === 'on');
+        win.close();
+        me.addFilterCls();
+        me.dimension.filter = filter;
+        me.fireEvent('filterchange', me, filter);
+    },
+    
+<span id='Mz-pivot-plugin-configurator-Column-method-onRemoveFilter'>    onRemoveFilter: function(){
+</span>        var me = this;
+        
+        me.removeFilterCls();
+        me.dimension.filter = null;
+        me.fireEvent('filterchange', me, null);
+    }
+    
+    
+});</pre>
+</body>
+</html>

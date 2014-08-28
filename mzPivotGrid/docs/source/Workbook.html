@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Mz-pivot-dataexport-excel-Workbook'>/**
+</span>*   Class used to create an Excel workbook
+*/
+Ext.define('Mz.pivot.dataexport.excel.Workbook', {
+    extend: 'Mz.pivot.dataexport.excel.Workbase',
+    
+    requires: [
+        'Ext.XTemplate',
+        'Mz.pivot.dataexport.excel.Worksheet',
+        'Mz.pivot.dataexport.excel.Cell',
+        'Mz.pivot.dataexport.excel.Style'
+    ],
+    
+<span id='Mz-pivot-dataexport-excel-Workbook-method-constructor'>    constructor: function (config) {
+</span>        var me = this;
+        
+        me.callParent(arguments);
+        
+        Ext.applyIf(me, {
+<span id='Mz-pivot-dataexport-excel-Workbook-cfg-hasDefaultStyle'>            /**
+</span>             * @cfg hasDefaultStyle
+             * @type Boolean
+             * True to add the default styling options to all cells (defaults to true)
+             */
+            hasDefaultStyle: true,
+
+<span id='Mz-pivot-dataexport-excel-Workbook-cfg-headerFontSize'>            /**
+</span>             * @cfg headerFontSize
+             * @type String
+             * Font size used for the table header.
+             */
+            headerFontSize: &quot;10&quot;,
+
+<span id='Mz-pivot-dataexport-excel-Workbook-cfg-headerFillColor'>            /**
+</span>             * @cfg headerFillColor
+             * @type String
+             * Fill folor used for the table header cells
+             */
+            headerFillColor: &quot;#BFBFBF&quot;,
+
+<span id='Mz-pivot-dataexport-excel-Workbook-cfg-windowHeight'>            /**
+</span>             * @cfg windowHeight
+             * @type Number
+             * Excel window height
+             */
+            windowHeight: 9000,
+
+<span id='Mz-pivot-dataexport-excel-Workbook-cfg-windowWidth'>            /**
+</span>             * @cfg windowWidth
+             * @type Number
+             * Excel window width
+             */
+            windowWidth: 50000,
+
+<span id='Mz-pivot-dataexport-excel-Workbook-cfg-protectStructure'>            /**
+</span>             * @cfg protectStructure
+             * @type Boolean
+             * Protect structure
+             */
+            protectStructure: false,
+
+<span id='Mz-pivot-dataexport-excel-Workbook-cfg-protectWindows'>            /**
+</span>             * @cfg protectWindows
+             * @type Boolean
+             * Protect windows
+             */
+            protectWindows: false,
+        
+<span id='Mz-pivot-dataexport-excel-Workbook-property-worksheets'>            /**
+</span>             * @property worksheets
+             * @type Array
+             * The array of worksheets inside this workbook
+             */
+            worksheets: [],
+
+<span id='Mz-pivot-dataexport-excel-Workbook-property-compiledWorksheets'>            /**
+</span>             * @property compiledWorksheets
+             * @type Array
+             * Array of all rendered Worksheets
+             */
+            compiledWorksheets: []
+
+        });
+        
+        if (me.hasDefaultStyle) {
+            me.addDefaultStyle();
+        }
+
+        me.addHeaderStyle();
+    },
+
+<span id='Mz-pivot-dataexport-excel-Workbook-method-render'>    /**
+</span>    * Render this workbook
+    * 
+    */
+    render: function () {
+        var me = this;
+        
+        me.compileWorksheets();
+        me.joinedWorksheets = me.compiledWorksheets.join(&quot;&quot;);
+
+        me.compileStyles();
+        me.joinedCompiledStyles = me.compiledStyles.join(&quot;&quot;);
+
+        return me.tpl.apply(me);
+    },
+
+<span id='Mz-pivot-dataexport-excel-Workbook-method-addWorksheet'>    /**
+</span>     * Adds a worksheet to this workbook based on a store and optional config
+     * @param {Ext.data.Store} store The store to initialize the worksheet with
+     * @param {Object} config Optional config object
+     * @return {Mz.pivot.dataexport.excel.Worksheet} The worksheet
+     */
+    addWorksheet: function (data, config) {
+        var me = this, values, i, worksheet;
+
+        worksheet = Ext.create(
+            'Mz.pivot.dataexport.excel.Worksheet', 
+            Ext.apply({
+                data:               data, 
+                hasDefaultStyle:    me.hasDefaultStyle, 
+                showTitle:          me.showTitle
+            }, config)
+        );
+
+        me.worksheets.push(worksheet);
+        
+        return worksheet;
+    },
+
+<span id='Mz-pivot-dataexport-excel-Workbook-method-compileStyles'>    /**
+</span>     * Compiles each Style attached to this Workbook by rendering it
+     * @return {Array} The compiled styles array
+     */
+    compileStyles: function () {
+        var me = this;
+        
+        me.compiledStyles = [];
+
+        Ext.each(me.worksheets, function (worksheet) {
+            me.styles = Ext.Array.merge(me.styles, worksheet.styles);
+        }, me);
+
+        Ext.each(me.styles, function (style) {
+            me.compiledStyles.push(style.render());
+        }, me);
+        
+        return me.compiledStyles;
+    },
+
+<span id='Mz-pivot-dataexport-excel-Workbook-method-compileWorksheets'>    /**
+</span>     * Compiles each Worksheet attached to this Workbook by rendering it
+     * @return {Array} The compiled worksheets array
+     */
+    compileWorksheets: function () {
+        var me = this;
+        
+        me.compiledWorksheets = [];
+
+        Ext.each(me.worksheets, function (worksheet) {
+            me.compiledWorksheets.push(worksheet.render());
+        }, me);
+
+        return me.compiledWorksheets;
+    },
+
+<span id='Mz-pivot-dataexport-excel-Workbook-property-tpl'>    tpl: new Ext.XTemplate(
+</span>        '&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;',
+        '&lt;ss:Workbook xmlns:ss=&quot;urn:schemas-microsoft-com:office:spreadsheet&quot; xmlns:x=&quot;urn:schemas-microsoft-com:office:excel&quot; xmlns:o=&quot;urn:schemas-microsoft-com:office:office&quot;&gt;',
+        '&lt;o:DocumentProperties&gt;',
+            '&lt;o:Title&gt;{title}&lt;/o:Title&gt;',
+        '&lt;/o:DocumentProperties&gt;',
+        '&lt;ss:ExcelWorkbook&gt;',
+            '&lt;ss:WindowHeight&gt;{windowHeight}&lt;/ss:WindowHeight&gt;',
+            '&lt;ss:WindowWidth&gt;{windowWidth}&lt;/ss:WindowWidth&gt;',
+            '&lt;ss:ProtectStructure&gt;{protectStructure}&lt;/ss:ProtectStructure&gt;',
+            '&lt;ss:ProtectWindows&gt;{protectWindows}&lt;/ss:ProtectWindows&gt;',
+        '&lt;/ss:ExcelWorkbook&gt;',
+        '&lt;ss:Styles&gt;',
+            '{joinedCompiledStyles}',
+        '&lt;/ss:Styles&gt;',
+            '{joinedWorksheets}',
+      '&lt;/ss:Workbook&gt;'
+    ),
+
+<span id='Mz-pivot-dataexport-excel-Workbook-method-addDefaultStyle'>    /**
+</span>     * Adds the default Style to this workbook. This sets the default font face and size, as well as cell borders
+     */
+    addDefaultStyle: function () {
+        var me = this,
+            borderProperties = [
+                { name: &quot;Color&quot;, value: me.cellBorderColor },
+                { name: &quot;Weight&quot;, value: &quot;1&quot; },
+                { name: &quot;LineStyle&quot;, value: &quot;Continuous&quot; }
+            ];
+
+        me.addStyle({
+            id: 'Default',
+            attributes: [
+              {
+                  name: &quot;Alignment&quot;,
+                  properties: [
+                    { name: &quot;Vertical&quot;, value: &quot;Top&quot; },
+                    { name: &quot;WrapText&quot;, value: &quot;1&quot; }
+                  ]
+              },
+              {
+                  name: &quot;Font&quot;,
+                  properties: [
+                    { name: &quot;FontName&quot;, value: me.cellFontName },
+                    { name: &quot;Size&quot;, value: me.cellFontSize }
+                  ]
+              },
+              me.getInteriorStyle(me.cellFillColor),
+              { name: &quot;NumberFormat&quot; }, 
+              { name: &quot;Protection&quot; },
+              {
+                  name: &quot;Borders&quot;,
+                  children: [
+                    {
+                        name: &quot;Border&quot;,
+                        properties: [{ name: &quot;Position&quot;, value: &quot;Top&quot; }].concat(borderProperties)
+                    },
+                    {
+                        name: &quot;Border&quot;,
+                        properties: [{ name: &quot;Position&quot;, value: &quot;Bottom&quot; }].concat(borderProperties)
+                    },
+                    {
+                        name: &quot;Border&quot;,
+                        properties: [{ name: &quot;Position&quot;, value: &quot;Left&quot; }].concat(borderProperties)
+                    },
+                    {
+                        name: &quot;Border&quot;,
+                        properties: [{ name: &quot;Position&quot;, value: &quot;Right&quot; }].concat(borderProperties)
+                    }
+                  ]
+              }
+            ]
+        });
+        
+        me.addStyle({
+            id: 'DefaultNumber',
+            parentStyle: 'Default',
+            attributes: [
+              {
+                  name: &quot;NumberFormat&quot;,
+                  properties: [{ name: &quot;Format&quot;, value: me.numberFormat }]
+              },
+              {
+                  name: &quot;Alignment&quot;,
+                  properties: [
+                    { name: &quot;Horizontal&quot;, value: &quot;Right&quot; }
+                  ]
+              }
+            ]
+        });
+
+        me.addStyle({
+            id: 'DefaultDateTime',
+            parentStyle: 'Default',
+            attributes: [
+              {
+                  name: &quot;NumberFormat&quot;,
+                  properties: [{ name: &quot;Format&quot;, value: me.dateFormat }]
+              },
+              {
+                  name: &quot;Alignment&quot;,
+                  properties: [
+                    { name: &quot;Horizontal&quot;, value: &quot;Right&quot; }
+                  ]
+              }
+            ]
+        });
+
+    },
+
+<span id='Mz-pivot-dataexport-excel-Workbook-method-addHeaderStyle'>    /**
+</span>    * Add style for the table header
+    * 
+    */
+    addHeaderStyle: function () {
+        var me = this;
+        
+        me.addStyle({
+            id: &quot;Header&quot;,
+            attributes: [
+              {
+                  name: &quot;Font&quot;,
+                  properties: [
+                    { name: &quot;Bold&quot;, value: &quot;1&quot; },
+                    { name: &quot;Size&quot;, value: me.headerFontSize }
+                  ]
+              },
+              me.getInteriorStyle(me.headerFillColor),
+              {
+                  name: &quot;Alignment&quot;,
+                  properties: [
+                    { name: &quot;WrapText&quot;, value: &quot;1&quot; },
+                    { name: &quot;Horizontal&quot;, value: &quot;Center&quot; }
+                  ]
+              }
+            ]
+        });
+    }
+    
+
+});</pre>
+</body>
+</html>

@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Mz-pivot-plugin-ExcelExport'>/**
+</span>* 
+* 
+* This plugin allows the user to export the pivot table data to an Excel file.
+*
+#Example usage:#
+
+    var excelExportPlugin = Ext.create('Mz.pivot.plugin.ExcelExport', {
+        title:  'Pivot grid export'
+    });
+
+    // in a button/menu handler do like this
+    var f = excelExportPlugin.getExcelData(true);
+    document.location = 'data:application/vnd.ms-excel;base64,' + Base64.encode(f);
+
+*
+*
+* This solution doesn't work in all browsers so you might want to send the Base64 content
+* to the backend server and get back the download file with proper HTTP headers. Please have a 
+* look at this example: http://dean.edwards.name/weblog/2005/06/base64-ie/
+*
+*
+*/
+Ext.define('Mz.pivot.plugin.ExcelExport', {
+    alias: 'plugin.mzexcelexport',
+    extend: 'Ext.AbstractPlugin',
+
+    requires: [
+        'Mz.pivot.dataexport.excel.Formatter'
+    ],
+
+<span id='Mz-pivot-plugin-ExcelExport-method-constructor'>    constructor: function(config){
+</span>        var me = this;
+        
+        config = config || {};
+        
+        me.config = Ext.apply({
+<span id='Mz-pivot-plugin-ExcelExport-cfg-showTitle'>            /**
+</span>             * @cfg showTitle
+             * @type Boolean
+             * Show or hide the title
+             */
+            showTitle: true,
+
+<span id='Mz-pivot-plugin-ExcelExport-cfg-title'>            /**
+</span>             * @cfg title
+             * @type String
+             * The title of the workbook
+             */
+            title: &quot;Workbook&quot;,
+
+<span id='Mz-pivot-plugin-ExcelExport-cfg-cellFontName'>            /**
+</span>             * @cfg cellFontName
+             * @type String
+             * The default font name used in the workbook. This is applied when {hasDefaultStyle} is true.
+             */
+            cellFontName: &quot;Arial&quot;,
+
+<span id='Mz-pivot-plugin-ExcelExport-cfg-cellFontSize'>            /**
+</span>             * @cfg cellFontSize
+             * @type String
+             * The default font size used in the workbook. This is applied when {hasDefaultStyle} is true.
+             */
+            cellFontSize: &quot;10&quot;,
+
+<span id='Mz-pivot-plugin-ExcelExport-cfg-cellBorderColor'>            /**
+</span>             * @cfg cellBorderColor
+             * @type String
+             * The colour of border to use for each Cell
+             */
+            cellBorderColor: &quot;#E4E4E4&quot;,
+
+<span id='Mz-pivot-plugin-ExcelExport-cfg-cellFillColor'>            /**
+</span>             * @cfg cellFillColor
+             * @type String
+             * The fill colour of each summary Cell
+             */
+            cellFillColor: &quot;&quot;,
+
+<span id='Mz-pivot-plugin-ExcelExport-cfg-titleFontSize'>            /**
+</span>             * @cfg titleFontSize
+             * @type String
+             * Font size used for the table title
+             */
+            titleFontSize: &quot;14&quot;,
+
+<span id='Mz-pivot-plugin-ExcelExport-cfg-titleFillColor'>            /**
+</span>             * @cfg titleFillColor
+             * @type String
+             * Fill folor used for the table title
+             */
+            titleFillColor: &quot;&quot;,
+
+<span id='Mz-pivot-plugin-ExcelExport-cfg-headerFontSize'>            /**
+</span>             * @cfg headerFontSize
+             * @type String
+             * Font size used for the table header.
+             */
+            headerFontSize: &quot;10&quot;,
+
+<span id='Mz-pivot-plugin-ExcelExport-cfg-headerFillColor'>            /**
+</span>             * @cfg headerFillColor
+             * @type String
+             * Fill folor used for the table header cells
+             */
+            headerFillColor: &quot;#BFBFBF&quot;,
+
+<span id='Mz-pivot-plugin-ExcelExport-cfg-groupHeaderFontSize'>            /**
+</span>             * @cfg groupHeaderFontSize
+             * @type String
+             * Font size applied to the summary group header cells
+             */
+            groupHeaderFontSize: &quot;10&quot;,
+
+<span id='Mz-pivot-plugin-ExcelExport-cfg-groupHeaderFillColor'>            /**
+</span>             * @cfg groupHeaderFillColor
+             * @type String
+             * Fill folor used for the summary group header cells
+             */
+            groupHeaderFillColor: &quot;#D8D8D8&quot;,
+
+<span id='Mz-pivot-plugin-ExcelExport-cfg-groupFooterFontSize'>            /**
+</span>             * @cfg groupFooterFontSize
+             * @type String
+             * Font size applied to the summary group footer cells
+             */
+            groupFooterFontSize: &quot;10&quot;,
+
+<span id='Mz-pivot-plugin-ExcelExport-cfg-groupFooterFillColor'>            /**
+</span>             * @cfg groupFooterFillColor
+             * @type String
+             * Fill folor used for the summary group footer cells
+             */
+            groupFooterFillColor: &quot;#BFBFBF&quot;,
+
+<span id='Mz-pivot-plugin-ExcelExport-cfg-dateFormat'>            /**
+</span>            * @cfg dateFormat
+            * @type String
+            * Default format used for the date values
+            */
+            dateFormat:     'Short Date',
+
+<span id='Mz-pivot-plugin-ExcelExport-cfg-numberFormat'>            /**
+</span>            * @cfg numberFormat
+            * @type String
+            * Default format used for the number values
+            */
+            numberFormat:   'Standard',
+
+<span id='Mz-pivot-plugin-ExcelExport-cfg-hasDefaultStyle'>            /**
+</span>             * @cfg hasDefaultStyle
+             * @type Boolean
+             * True to add the default styling options to all cells (defaults to true)
+             */
+            hasDefaultStyle: true,
+
+<span id='Mz-pivot-plugin-ExcelExport-cfg-windowHeight'>            /**
+</span>             * @cfg windowHeight
+             * @type Number
+             * Excel window height
+             */
+            windowHeight: 9000,
+
+<span id='Mz-pivot-plugin-ExcelExport-cfg-windowWidth'>            /**
+</span>             * @cfg windowWidth
+             * @type Number
+             * Excel window width
+             */
+            windowWidth: 50000,
+
+<span id='Mz-pivot-plugin-ExcelExport-cfg-protectStructure'>            /**
+</span>             * @cfg protectStructure
+             * @type Boolean
+             * Protect structure
+             */
+            protectStructure: false,
+
+<span id='Mz-pivot-plugin-ExcelExport-cfg-protectWindows'>            /**
+</span>             * @cfg protectWindows
+             * @type Boolean
+             * Protect windows
+             */
+            protectWindows: false
+        }, config);
+    },
+
+<span id='Mz-pivot-plugin-ExcelExport-method-init'>    init: function (grid) {
+</span>        var me = this;
+        
+        me.grid = grid; 
+        me.config = Ext.clone(me.config);
+
+        me.gridListeners = me.grid.on({
+            beforerender:   me.onBeforeGridRendered,
+            single:         true,
+            scope:          me,
+            destroyable:    true
+        });
+    },
+
+<span id='Mz-pivot-plugin-ExcelExport-method-destroy'>    destroy: function () {
+</span>        var me = this;
+        
+        delete me.grid;
+        if(me.gridMaster){
+            delete me.gridMaster;
+        }
+        
+        Ext.destroy(me.gridListeners);
+        
+        me.callParent(arguments);
+    },
+
+<span id='Mz-pivot-plugin-ExcelExport-method-onBeforeGridRendered'>    onBeforeGridRendered: function(){
+</span>        var me = this;
+        
+        if(me.grid instanceof Mz.pivot.Grid){
+            me.gridMaster = me.grid;
+        }else{
+            me.gridMaster = me.grid.up('mzpivotgrid');
+        }
+        
+        if(!me.gridMaster){
+            me.destroy();
+            return;
+        }
+    },
+    
+<span id='Mz-pivot-plugin-ExcelExport-method-getExcelData'>    /**
+</span>    * @param onlyExpandedNodes Set to true if you want to have a WYSIWYG Excel file.
+    */
+    getExcelData: function (onlyExpandedNodes) {
+        var me = this;
+        
+        if(!me.gridMaster) return;
+
+        var f = Ext.create('Mz.pivot.dataexport.excel.Formatter', {
+            matrix:             me.gridMaster.getMatrix(),
+            onlyExpandedNodes:  onlyExpandedNodes,
+            config:             me.config
+        });
+        return f.format();
+    }
+});</pre>
+</body>
+</html>

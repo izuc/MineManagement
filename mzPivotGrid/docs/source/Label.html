@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Mz-aggregate-filter-Label'>/**
+</span>* Label filter class
+* 
+*/
+Ext.define('Mz.aggregate.filter.Label', {
+    extend: 'Mz.aggregate.filter.Abstract',
+
+    alias: 'pivotfilter.label',
+    
+<span id='Mz-aggregate-filter-Label-cfg-mztype'>    mztype: 'label',
+</span>    
+    inheritableStatics: {
+<span id='Mz-aggregate-filter-Label-static-property-TypeBeginsWith'>        /**
+</span>        * Filter type 'begins with'
+        * 
+        * @type Number
+        */
+        TypeBeginsWith:             21,
+<span id='Mz-aggregate-filter-Label-static-property-TypeDoesNotBeginWith'>        /**
+</span>        * Filter type 'not begin with'
+        * 
+        * @type Number
+        */
+        TypeDoesNotBeginWith:       22,
+<span id='Mz-aggregate-filter-Label-static-property-TypeEndsWith'>        /**
+</span>        * Filter type 'ends with'
+        * 
+        * @type Number
+        */
+        TypeEndsWith:               23,
+<span id='Mz-aggregate-filter-Label-static-property-TypeDoesNotEndWith'>        /**
+</span>        * Filter type 'not end with'
+        * 
+        * @type Number
+        */
+        TypeDoesNotEndWith:         24,
+<span id='Mz-aggregate-filter-Label-static-property-TypeContains'>        /**
+</span>        * Filter type 'contains'
+        * 
+        * @type Number
+        */
+        TypeContains:               25,
+<span id='Mz-aggregate-filter-Label-static-property-TypeDoesNotContain'>        /**
+</span>        * Filter type 'does not contain'
+        * 
+        * @type Number
+        */
+        TypeDoesNotContain:         26
+    },
+
+<span id='Mz-aggregate-filter-Label-method-isMatch'>    /**
+</span>    * Check if the specified value matches the filter type/value
+    * 
+    * @param value
+    */
+    isMatch: function(value){
+        var me = this;
+        
+        if(me.type == me.self.TypeBeginsWith){
+            return me.startsWith(String(value || ''), String(me.value || ''), !me.caseSensitive);
+        }
+        
+        if(me.type == me.self.TypeDoesNotBeginWith){
+            return !me.startsWith(String(value || ''), String(me.value || ''), !me.caseSensitive);
+        }
+        
+        if(me.type == me.self.TypeEndsWith){
+            return me.endsWith(String(value || ''), String(me.value || ''), !me.caseSensitive);
+        }
+        
+        if(me.type == me.self.TypeDoesNotEndWith){
+            return !me.endsWith(String(value || ''), String(me.value || ''), !me.caseSensitive);
+        }
+        
+        if(me.type == me.self.TypeContains){
+            return me.stringContains(String(value || ''), String(me.value || ''), !me.caseSensitive);
+        }
+        
+        if(me.type == me.self.TypeDoesNotContain){
+            return !me.stringContains(String(value || ''), String(me.value || ''), !me.caseSensitive);
+        }
+        
+        // no valid type was specified. check if it matches the parent class.
+        return me.callParent(arguments);
+    },
+    
+<span id='Mz-aggregate-filter-Label-method-stringContains'>    /**
+</span>    * Check if the specified string contains the substring
+    * 
+    * @param s
+    * @param start
+    * @param ignoreCase
+    */
+    stringContains: function(s, start, ignoreCase){
+        var result = (start.length &lt;= s.length);
+        
+        if(result){
+            if (ignoreCase) {
+                s = s.toLowerCase();
+                start = start.toLowerCase();
+            }
+            result = (s.lastIndexOf(start) &gt;= 0);
+        }
+        
+        return result;
+    },
+    
+<span id='Mz-aggregate-filter-Label-method-startsWith'>    /**
+</span>     * Checks if a string starts with a substring
+     * In ExtJS 4.2.x this function is part of Ext.String class. Added here for compatibility with 4.1.x.
+     * @param {String} s The original string
+     * @param {String} start The substring to check
+     * @param {Boolean} [ignoreCase=false] True to ignore the case in the comparison
+     */
+    startsWith: function(s, start, ignoreCase){
+        var result = (start.length &lt;= s.length);
+        
+        if (result) {
+            if (ignoreCase) {
+                s = s.toLowerCase();
+                start = start.toLowerCase();
+            }
+            result = s.lastIndexOf(start, 0) === 0;
+        }
+        return result;
+    },
+    
+<span id='Mz-aggregate-filter-Label-method-endsWith'>    /**
+</span>     * Checks if a string ends with a substring
+     * In ExtJS 4.2.x this function is part of Ext.String class. Added here for compatibility with 4.1.x.
+     * @param {String} s The original string
+     * @param {String} start The substring to check
+     * @param {Boolean} [ignoreCase=false] True to ignore the case in the comparison
+     */
+    endsWith: function(s, end, ignoreCase){
+        var result = (start.length &lt;= s.length);
+        
+        if (result) {
+            if (ignoreCase) {
+                s = s.toLowerCase();
+                end = end.toLowerCase();
+            }
+            result = s.indexOf(end, s.length - end.length) !== -1;
+        }
+        return result;
+    }    
+    
+});</pre>
+</body>
+</html>

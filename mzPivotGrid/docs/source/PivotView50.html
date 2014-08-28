@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Mz-pivot-feature-PivotView50'>/**
+</span>* This class is used when running in ExtJS 5.0.x
+* It is automatically added to the pivot grid.
+* 
+*/
+Ext.define('Mz.pivot.feature.PivotView50', {
+    extend: 'Mz.pivot.feature.PivotViewCommon',
+    
+    alias: 'feature.pivotview50',
+    
+<span id='Mz-pivot-feature-PivotView50-property-outerTpl'>    outerTpl: [
+</span>        '{%',
+            // Set up the grouping unless we are disabled
+            'var me = this.pivotViewFeature;',
+            'if (!(me.disabled)) {',
+                'me.setup();',
+            '}',
+
+            // Process the item
+            'this.nextTpl.applyOut(values, out, parent);',
+        '%}',
+    {
+        priority: 200
+    }],
+    
+<span id='Mz-pivot-feature-PivotView50-property-rowTpl'>    rowTpl: [
+</span>        '{%',
+            'var me = this.pivotViewFeature;',
+            'me.setupRowData(values.record, values.rowIndex, values);',
+            'values.view.renderColumnSizer(values, out);',
+            'this.nextTpl.applyOut(values, out, parent);',
+            'me.resetRenderers();',
+        '%}',
+        {
+            priority: 200,
+            
+            syncRowHeights: function(firstRow, secondRow) {
+                var firstHeight, secondHeight;
+                
+                firstRow = Ext.fly(firstRow, 'syncDest');
+                if(firstRow){
+                    firstHeight = firstRow.offsetHeight;
+                }
+                secondRow = Ext.fly(secondRow, 'sycSrc');
+                if(secondRow){
+                    secondHeight = secondRow.offsetHeight;
+                }
+                
+                // Sync the heights of row body elements in each row if they need it.
+                if (firstRow &amp;&amp; secondRow) {
+                    if (firstHeight &gt; secondHeight) {
+                        Ext.fly(secondRow).setHeight(firstHeight);
+                    }
+                    else if (secondHeight &gt; firstHeight) {
+                        Ext.fly(firstRow).setHeight(secondHeight);
+                    }
+                }
+
+            }
+
+        }
+    ],
+
+<span id='Mz-pivot-feature-PivotView50-method-init'>    init: function (grid) {
+</span>        var me = this,
+            view = me.view;
+
+        me.callParent(arguments);
+
+        // Add a table level processor
+        view.addTpl(Ext.XTemplate.getTpl(me, 'outerTpl')).pivotViewFeature = me;
+        // Add a row level processor
+        view.addRowTpl(Ext.XTemplate.getTpl(me, 'rowTpl')).pivotViewFeature = me;
+
+        view.preserveScrollOnRefresh = true;
+        
+        if (view.bufferedRenderer) {
+            view.bufferedRenderer.variableRowHeight = true;
+        }else{
+            grid.variableRowHeight = view.variableRowHeight = true;
+        }
+
+    },
+    
+<span id='Mz-pivot-feature-PivotView50-method-getViewListeners'>    getViewListeners: function(){
+</span>        var me = this;
+        
+        return Ext.apply(me.callParent(arguments) || {}, {
+            refresh:   me.onViewReady
+        });
+    },
+    
+<span id='Mz-pivot-feature-PivotView50-method-getGridListeners'>    getGridListeners: function(){
+</span>        var me = this;
+        
+        return Ext.apply(me.callParent(arguments) || {}, {
+            beforerender:   me.onBeforeGridRendered
+        });
+    },
+
+<span id='Mz-pivot-feature-PivotView50-method-onBeforeGridRendered'>    onBeforeGridRendered: function(grid){
+</span>        var me = this;
+        
+        if(me.isRTL()){
+            me.view.addCellTpl(Ext.XTemplate.getTpl(me, 'rtlCellTpl'));
+        }else{
+            me.view.addCellTpl(Ext.XTemplate.getTpl(me, 'cellTpl'));
+        }
+        
+        if(me.view.bufferedRenderer &amp;&amp; Ext.isFunction(me.view.bufferedRenderer.onRangeFetched)){
+            me.view.bufferedRenderer.onRangeFetched = Ext.Function.createSequence(me.view.bufferedRenderer.onRangeFetched, function(){
+                me.onViewReady();
+            });
+        }
+    },
+    
+<span id='Mz-pivot-feature-PivotView50-method-onViewReady'>    onViewReady: function(){
+</span>        var me = this;
+        
+        if(me.gridMaster &amp;&amp; me.gridMaster.syncRowHeights &amp;&amp; me.lockingPartner &amp;&amp; me.view.bufferedRenderer){
+            me.gridMaster.syncRowHeights();
+        }
+    },
+    
+<span id='Mz-pivot-feature-PivotView50-method-vetoEvent'>    vetoEvent: function (record, row, rowIndex, e) {
+</span>        // Do not veto mouseover/mouseout
+        if (e.type !== 'mouseover' &amp;&amp; e.type !== 'mouseout' &amp;&amp; e.type !== 'mouseenter' &amp;&amp; e.type !== 'mouseleave' &amp;&amp; e.getTarget(this.eventSelector)) {
+            return false;
+        }
+    },
+    
+<span id='Mz-pivot-feature-PivotView50-method-setupRowData'>    setupRowData: function(record, idx, rowValues) {
+</span>        var me = this,
+            storeInfo = me.dataSource.storeInfo[record.internalId],
+            rendererParams = storeInfo ? storeInfo.rendererParams : {};
+        
+        rowValues.rowClasses.length = 0;
+        Ext.Array.insert(rowValues.rowClasses, 0, storeInfo ? storeInfo.rowClasses : []);
+        
+        me.setRenderers(rendererParams);
+    }
+    
+    
+});</pre>
+</body>
+</html>

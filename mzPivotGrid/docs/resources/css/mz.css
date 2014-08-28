@@ -1,0 +1,5 @@
+#north-region {
+	background: none;
+	background: -webkit-gradient(linear,left top,left bottom,from(#91bd09),to(#67861e));
+	background: -moz-linear-gradient(top,#91bd09,#67861e);
+}

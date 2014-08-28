@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Mz-pivot-plugin-configurator-Container'>/**
+</span>* @private
+* 
+* This class is used for managing all fields for an axis.
+* 
+*/
+Ext.define('Mz.pivot.plugin.configurator.Container', {
+    extend: 'Ext.container.Container',
+
+    requires: [
+        'Mz.pivot.plugin.configurator.Column',
+        'Mz.pivot.plugin.configurator.DragZone',
+        'Mz.pivot.plugin.configurator.DropZone'
+    ],
+    
+    alias: 'widget.mzconfigcontainer',
+    
+<span id='Mz-pivot-plugin-configurator-Container-property-style'>    style:          'overflow:hidden',
+</span><span id='Mz-pivot-plugin-configurator-Container-property-childEls'>    childEls:       ['innerCt', 'targetEl'],
+</span><span id='Mz-pivot-plugin-configurator-Container-property-layout'>    layout:         'column',
+</span><span id='Mz-pivot-plugin-configurator-Container-property-handleSorting'>    handleSorting:  false,
+</span><span id='Mz-pivot-plugin-configurator-Container-property-handleFiltering'>    handleFiltering:false,
+</span><span id='Mz-pivot-plugin-configurator-Container-property-isAgg'>    isAgg:          false,
+</span><span id='Mz-pivot-plugin-configurator-Container-property-height'>    height:         'auto',
+</span>
+<span id='Mz-pivot-plugin-configurator-Container-property-dragDropText'>    dragDropText:   'Drop Column Fields Here',
+</span><span id='Mz-pivot-plugin-configurator-Container-property-baseCls'>    baseCls:        Ext.baseCSSPrefix + 'config-panel-ct',
+</span>
+<span id='Mz-pivot-plugin-configurator-Container-method-destroy'>    destroy: function(){
+</span>        var me = this;
+        
+        Ext.destroy(me.dragZone, me.dropZone, me.relayers, me.targetEl);
+        
+        me.callParent();
+    },
+    
+<span id='Mz-pivot-plugin-configurator-Container-method-enable'>    enable: function(){
+</span>        var me = this;
+        
+        if(me.dragZone){
+            me.dragZone.enable();
+        }
+        if(me.dropZone){
+            me.dropZone.enable();
+        }
+    },
+    
+<span id='Mz-pivot-plugin-configurator-Container-method-disable'>    disable: function(){
+</span>        var me = this;
+        
+        if(me.dragZone){
+            me.dragZone.disable();
+        }
+        if(me.dropZone){
+            me.dropZone.disable();
+        }
+    },
+
+<span id='Mz-pivot-plugin-configurator-Container-method-afterRender'>    afterRender: function(){
+</span>        var me = this;
+        
+        me.callParent();
+
+        me.dragZone = new Mz.pivot.plugin.configurator.DragZone(me);
+        me.dropZone = new Mz.pivot.plugin.configurator.DropZone(me);
+
+        me.mon(me, 'afterlayout', me.showGroupByText, me);
+    },
+    
+<span id='Mz-pivot-plugin-configurator-Container-method-addColumn'>    /**
+</span>    * This is used for adding a new config field to this container.
+    * 
+    */
+    addColumn: function(config, pos, notify){
+        var me = this, newCol, cfg = {},
+            itemFound = me.items.findIndex('dimensionId', new RegExp('^' + config.id + '$', 'i')) &gt;= 0;
+        
+        if(!me.isAgg){
+            // if column found then don't do anything
+            if(itemFound){
+                if (notify === true) {
+                    me.notifyGroupChange();
+                }
+                return;
+            }
+        }else{
+            if(itemFound){
+                config.id = Ext.id();
+            }
+        }
+
+        if(me.items.getCount() == 0){
+            me.hideGroupByText();
+        }
+        
+        Ext.apply(cfg, {
+            dimension:      config,
+            dimensionId:    config.id,
+            header:         config.header,
+            isCustomizable: me.isCustomizable,
+            isAgg:          me.isAgg
+        });
+        
+        if(me.isAgg){
+            config.aggregator = config.aggregator || 'sum';
+        }
+        
+        newCol = Ext.create('Mz.pivot.plugin.configurator.Column', cfg);
+        
+        if(pos != -1){
+            me.insert(pos, newCol);
+        }else{
+            me.add(newCol);
+        }
+        me.updateColumnIndexes();
+        newCol.relayers = me.relayEvents(newCol, ['sortchange', 'filterchange', 'configchange']);
+
+        if(notify === true){
+            me.notifyGroupChange();
+        }
+    },
+    
+<span id='Mz-pivot-plugin-configurator-Container-method-getColumnPosition'>    /**
+</span>    * This is used for calculating column position in this container.
+    * 
+    */
+    getColumnPosition: function(column, position){
+        var me = this, pos;
+        
+        if(column instanceof Mz.pivot.plugin.configurator.Column){
+            //we have to insert before or after this column
+            pos = me.items.findIndex('id', column.id);
+            pos = (position === 'before') ? pos : pos + 1;
+        }else{
+            pos = -1;
+        }
+        return pos;
+    },
+    
+<span id='Mz-pivot-plugin-configurator-Container-method-moveColumn'>    /**
+</span>    * This is used for moving a column inside this container.
+    * 
+    */
+    moveColumn: function(idFrom, idTo, position){
+        var me = this,
+            pos = me.items.findIndex('id', idFrom),
+            newPos = me.items.findIndex('id', idTo);
+        
+        if(pos != newPos){
+            if(newPos &gt; pos){
+                newPos = (position === 'before') ? Math.max(newPos - 1, 0) : newPos;                        
+            }else{
+                newPos = (position === 'before') ? newPos : newPos + 1;
+            }
+            
+            me.move(pos, newPos);
+            me.updateColumnIndexes();
+            me.notifyGroupChange();
+        }
+    },
+    
+<span id='Mz-pivot-plugin-configurator-Container-method-updateColumnIndexes'>    /**
+</span>    * @private
+    * After a column is moved the indexes has to be updated.
+    * 
+    */
+    updateColumnIndexes: function(){
+        var me = this;
+        
+        me.items.each(function(item, index, all){
+            item.index = index;
+        });
+    },
+    
+<span id='Mz-pivot-plugin-configurator-Container-method-notifyGroupChange'>    /**
+</span>    * This is used for firing the 'configchange' event
+    * 
+    */
+    notifyGroupChange: function(){
+        var me = this;
+        me.fireEvent('configchange');
+    },
+    
+<span id='Mz-pivot-plugin-configurator-Container-method-showGroupByText'>    /**
+</span>    * The container has an info text displayed inside. This function makes it visible.
+    * 
+    */
+    showGroupByText: function(){
+        var me = this,
+            method;
+        
+        if(me.items.getCount() === 0){
+            me.innerCt.setHeight(me.minHeight);
+            if(me.targetEl){
+                method = me.targetEl.setHtml ? 'setHtml' : 'setHTML';
+                me.targetEl[method]('&lt;div class=&quot;' + Ext.baseCSSPrefix + 'config-panel-text&quot;&gt;' + me.dragDropText + '&lt;/div&gt;');
+            }else{
+                me.targetEl = me.innerCt.createChild();
+            }
+        }
+    },
+    
+<span id='Mz-pivot-plugin-configurator-Container-method-hideGroupByText'>    /**
+</span>    * The container has an info text displayed inside. This function hides it.
+    * 
+    */
+    hideGroupByText: function(){
+        var me = this,
+            method;
+        
+        if(me.targetEl){
+            method = me.targetEl.setHtml ? 'setHtml' : 'setHTML';
+            me.targetEl[method]('');
+        }
+    }
+    
+    
+});</pre>
+</body>
+</html>

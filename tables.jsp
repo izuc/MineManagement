@@ -1,0 +1,11 @@
+<%
+        String req = request.getParameter("tablename");
+        if (req.equals("bestellpos")) { %>
+[{"field":"*","extra":"","id":"C01DB153-C5A6-7891-360D0941C1BFB02B","key":"","tableName":"bestellpos","null":"","default":"","type":""},{"field":"bestellpos_id","extra":"auto_increment","id":"C01DB154-0FD4-E500-BBE7DADC3F5910F8","key":"PRI","tableName":"bestellpos","null":false,"default":"","type":"int(11)"},{"field":"bestell_id","extra":"","id":"C01DB155-EF88-1644-25C837799580F6F2","key":"MUL","tableName":"bestellpos","null":true,"default":0,"type":"int(11)"},{"field":"produkt_id","extra":"","id":"C01DB156-ABF3-212E-45368670EE324220","key":"MUL","tableName":"bestellpos","null":true,"default":0,"type":"int(11)"},{"field":"ean","extra":"","id":"C01DB157-ECBE-B4E2-3A4CDDA1793CA469","key":"MUL","tableName":"bestellpos","null":true,"default":"","type":"varchar(15)"},{"field":"anzahl","extra":"","id":"C01DB158-FBAD-4D30-340EE21581B8A4C1","key":"","tableName":"bestellpos","null":true,"default":0,"type":"int(11)"},{"field":"bemerkung","extra":"","id":"C01DB159-C3F0-E9D0-4B391C3746536BA0","key":"","tableName":"bestellpos","null":true,"default":"","type":"varchar(255)"},{"field":"ek_netto","extra":"","id":"C01DB15A-99F5-F903-AF637D62D6A4F066","key":"","tableName":"bestellpos","null":true,"default":0.0000,"type":"decimal(19,4)"},{"field":"datetimeadded","extra":"","id":"C01DB15B-EE91-2467-DF9EB5BD42D6FF0B","key":"","tableName":"bestellpos","null":true,"default":"","type":"datetime"},{"field":"datetimeupdated","extra":"","id":"C01DB15C-B2F8-FCAE-401F96D714F5EC31","key":"","tableName":"bestellpos","null":true,"default":"","type":"datetime"}]
+<%
+	} else if (req.equals("bestellung")) { %>
+[{"field":"*","extra":"","id":"C2021452-00F3-DCCF-2872BC3DF98075F3","key":"","tableName":"bestellung","null":"","default":"","type":""},{"field":"bestell_id","extra":"auto_increment","id":"C2021453-0C33-2EC3-9536D0367E21AFFC","key":"PRI","tableName":"bestellung","null":false,"default":"","type":"int(11)"},{"field":"bestell_datum","extra":"","id":"C2021454-09AC-69C4-37E713DF0CD06954","key":"","tableName":"bestellung","null":true,"default":"","type":"datetime"},{"field":"bname","extra":"","id":"C2021455-CA72-1F5B-97B8C3613F83DD3B","key":"MUL","tableName":"bestellung","null":true,"default":"","type":"varchar(255)"}]
+<%
+	}
+    %>
+

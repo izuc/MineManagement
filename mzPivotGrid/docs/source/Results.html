@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Mz-aggregate-matrix-Results'>/**
+</span>* This class stores the matrix results. In case of a Local matrix it is able to do the calculations.
+* 
+*/
+Ext.define('Mz.aggregate.matrix.Results', {
+    requires: [
+        'Mz.aggregate.MixedCollection',
+        'Mz.aggregate.matrix.Result'
+    ],
+    
+<span id='Mz-aggregate-matrix-Results-property-items'>    /**
+</span>    *  Collection of {Mz.aggregate.matrix.Result} objects
+    * 
+    * @type {Mz.aggregate.MixedCollection}
+    */
+    items:  null,
+    
+<span id='Mz-aggregate-matrix-Results-property-matrix'>    /**
+</span>    * Reference to the matrix object
+    * 
+    * @type {Mz.aggregate.matrix.Abstract}
+    */
+    matrix: null,
+    
+<span id='Mz-aggregate-matrix-Results-method-constructor'>    constructor: function(matrix){
+</span>        var me = this;
+        
+        me.matrix = matrix;
+        me.items = Ext.create('Mz.aggregate.MixedCollection');
+        me.items.getKey = function(obj){
+            return obj.leftKey + '/' + obj.topKey;
+        };
+        
+        me.callParent(arguments);
+    },
+    
+<span id='Mz-aggregate-matrix-Results-method-destroy'>    destroy: function(){
+</span>        var me = this;
+        
+        delete me.matrix;
+        Ext.destroy(me.items);
+        
+        me.callParent(arguments);
+    },
+    
+<span id='Mz-aggregate-matrix-Results-method-add'>    /**
+</span>    * Add a new Result object by left/top axis keys. If one of the keys matches the grandTotalKey
+    * then mark that Result as grandTotal.
+    * If there is already a Result object for the left/top axis pair then return that one.
+    * 
+    * @param leftKey
+    * @param topKey
+    * @returns {Mz.aggregate.matrix.Result}
+    */
+    add: function(leftKey, topKey){
+        var me = this,
+            obj = me.get(leftKey, topKey);
+        
+        if(!obj){
+            
+            obj = me.items.add(Ext.create('Mz.aggregate.matrix.Result', {
+                leftKey:        leftKey,
+                topKey:         topKey,
+                matrix:         me.matrix
+            }));
+        }
+        
+        return obj;
+    },
+    
+<span id='Mz-aggregate-matrix-Results-method-get'>    /**
+</span>    * Returns the Result object for the specified left/top axis keys
+    * 
+    * @param leftKey
+    * @param topKey
+    * @returns {Mz.aggregate.matrix.Result}
+    */
+    get: function(leftKey, topKey){
+        return this.items.getByKey(leftKey + '/' + topKey);
+    },
+    
+<span id='Mz-aggregate-matrix-Results-method-getByLeftKey'>    /**
+</span>    * Return all Result objects for the specified leftKey
+    * 
+    * @param leftKey
+    * @returns Array
+    */
+    getByLeftKey: function(leftKey){
+        var col = this.items.filterBy(function(item, key){
+            var keys = String(key).split('/');
+            return (leftKey == keys[0]);
+        });
+        
+        return col.getRange();
+    },
+    
+<span id='Mz-aggregate-matrix-Results-method-getByTopKey'>    /**
+</span>    * Return all Result objects for the specified leftKey
+    * 
+    * @param leftKey
+    * @returns Array
+    */
+    getByTopKey: function(topKey){
+        var col = this.items.filterBy(function(item, key){
+            var keys = String(key).split('/');
+            return (keys.length &gt; 1 &amp;&amp; topKey == keys[1]);;
+        });
+        
+        return col.getRange();
+    },
+    
+<span id='Mz-aggregate-matrix-Results-method-calculate'>    /**
+</span>    * Calculate aggregate values for each available Result object
+    * 
+    */
+    calculate: function(){
+        this.items.each(function(item){
+            item.calculate();
+        });
+    }
+});</pre>
+</body>
+</html>

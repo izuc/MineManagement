@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Mz-aggregate-axis-Item'>/**
+</span>* The axis has items that are generated when the records are processed.
+* This class stores info about such an item.
+* 
+*/
+Ext.define('Mz.aggregate.axis.Item', {
+<span id='Mz-aggregate-axis-Item-property-level'>    /**
+</span>    * The tree level this item belongs to
+    * 
+    * @type Number
+    */
+    level:          0,
+    
+<span id='Mz-aggregate-axis-Item-property-key'>    /**
+</span>    * The key that uniquely identifies this item in the tree. The key is a string compound of
+    * all parent items keys separated by the matrix keysSeparator
+    * 
+    * @type String
+    */
+    key:            '',
+    
+<span id='Mz-aggregate-axis-Item-property-value'>    /**
+</span>    * The item value as it appears in the store
+    * 
+    * @type String
+    */
+    value:          '',
+    
+<span id='Mz-aggregate-axis-Item-property-name'>    /**
+</span>    * The item name after the grouperFn was applied to the value
+    * 
+    * @type String
+    */
+    name:           '',
+    
+<span id='Mz-aggregate-axis-Item-property-dimensionId'>    /**
+</span>    * Id of the dimension this item refers to.
+    * 
+    * @type String
+    */
+    dimensionId:    '',
+    
+<span id='Mz-aggregate-axis-Item-property-dimension'>    /**
+</span>    * The dimension instance
+    * 
+    * @type {Mz.aggregate.dimension.Item}
+    * 
+    */
+    dimension:      null,
+    
+<span id='Mz-aggregate-axis-Item-property-children'>    /**
+</span>    * Array of children items this item has
+    * 
+    * 
+    * @type Array
+    */
+    children:       null,
+    
+<span id='Mz-aggregate-axis-Item-property-record'>    /**
+</span>    * When the Local matrix is used this is the pivot store record generated for this axis item
+    * 
+    * @type {Ext.data.Model}
+    */
+    record:         null,
+    
+<span id='Mz-aggregate-axis-Item-property-axis'>    /**
+</span>    * Parent axis instance
+    * 
+    * @type {Mz.aggregate.axis.Abstract}
+    * 
+    */
+    axis:           null,
+    
+<span id='Mz-aggregate-axis-Item-property-data'>    /**
+</span>    * Object that stores all values from all axis items parents
+    * 
+    * @type Object
+    */
+    data:           null,
+    
+<span id='Mz-aggregate-axis-Item-property-expanded'>    /**
+</span>    * Is this item expanded or collapsed?
+    * 
+    * @type Boolean
+    */
+    expanded:       false,
+    
+<span id='Mz-aggregate-axis-Item-method-constructor'>    constructor: function(config){
+</span>        var me = this;
+        
+        Ext.apply(me, config || {});
+        
+        me.callParent(arguments);
+    },
+    
+<span id='Mz-aggregate-axis-Item-method-destroy'>    destroy: function(){
+</span>        var me = this;
+        
+        if(me.axis){
+            delete me.axis;
+        }
+        
+        if(me.data){
+            delete me.data;
+        }
+        
+        if(me.dimension){
+            delete me.dimension;
+        }
+        
+        if(me.record){
+            delete me.record;
+        }
+        
+        if(Ext.isArray(me.children)){
+            me.children.length = 0;
+        }
+        
+        me.callParent(arguments);
+    },
+    
+<span id='Mz-aggregate-axis-Item-method-getTextTotal'>    /**
+</span>    * Returns the group total text formatted according to the template defined in the matrix
+    * 
+    */
+    getTextTotal: function(){
+        var me = this,
+            groupHeaderTpl;
+        
+        if(Ext.XTemplate.getTpl){
+            groupHeaderTpl = Ext.XTemplate.getTpl(me.axis.matrix, 'textTotalTpl');
+        }else{
+            groupHeaderTpl = new Ext.XTemplate(me.axis.matrix['textTotalTpl']);
+        }
+        
+        return groupHeaderTpl.apply({
+            groupField: me.dimension.dataIndex,
+            columnName: me.dimension.dataIndex,
+            name:       me.name,
+            rows:       me.children || []
+        });
+    }
+});</pre>
+</body>
+</html>
